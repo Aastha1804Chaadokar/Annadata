@@ -1,0 +1,27 @@
+{
+  "name": "annadata-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Annadata - Har Kisan, Har Fasal, Har Faisla. Monorepo foundation for India-focused Agritech platform.",
+  "workspaces": [
+    "backend",
+    "web",
+    "mobile"
+  ],
+  "scripts": {
+    "backend:dev": "npm run dev --workspace=backend",
+    "backend:build": "npm run build --workspace=backend",
+    "web:dev": "npm run dev --workspace=web",
+    "web:build": "npm run build --workspace=web",
+    "mobile:start": "npm run start --workspace=mobile"
+  },
+  "keywords": [
+    "agritech",
+    "india",
+    "agriculture",
+    "annadata",
+    "monorepo"
+  ],
+  "author": "Annadata Team",
+  "license": "MIT"
+}

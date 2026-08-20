@@ -15,6 +15,11 @@
     "web:build": "npm run build --workspace=web",
     "mobile:start": "npm run start --workspace=mobile"
   },
+  "dependencies": {
+    "@react-three/drei": "9.102.0",
+    "@react-three/fiber": "8.17.10",
+    "three": "0.163.0"
+  },
   "keywords": [
     "agritech",
     "india",
@@ -23,5 +28,13 @@
     "monorepo"
   ],
   "author": "Annadata Team",
-  "license": "MIT"
+  "license": "MIT",
+  "optionalDependencies": {
+    "@next/swc-win32-x64-msvc": "14.2.35"
+  },
+  "overrides": {
+    "@react-three/fiber": "8.17.10",
+    "@react-three/drei": "9.102.0",
+    "three": "0.163.0"
+  }
 }

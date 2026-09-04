@@ -53,8 +53,19 @@ export const login = async (mobile: string, password?: string): Promise<AuthResp
     return { success: false, error: data.error || 'Invalid credentials' };
   } catch (err: any) {
     // Offline / Fallback login authorization
+    let fallbackName = `Farmer ${mobile.slice(-4)}`;
+    if (typeof window !== 'undefined') {
+      try {
+        const existingProfile = localStorage.getItem('annadata_farmer_profile');
+        if (existingProfile) {
+          const parsed = JSON.parse(existingProfile);
+          if (parsed.name) fallbackName = parsed.name;
+        }
+      } catch (e) {}
+    }
+
     const fallbackUser: AuthUser = {
-      name: 'Ram Singh',
+      name: fallbackName,
       mobile,
     };
     const fallbackToken = `session_${Date.now()}`;

@@ -11,9 +11,9 @@ import { Sprout, User, Phone, Lock, ArrowRight, AlertCircle } from 'lucide-react
 export default function RegisterPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [name, setName] = useState<string>('Ram Singh');
+  const [name, setName] = useState<string>('');
   const [mobile, setMobile] = useState<string>('');
-  const [password, setPassword] = useState<string>('123456');
+  const [password, setPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -22,19 +22,27 @@ export default function RegisterPage() {
     setErrorMessage(null);
     setIsLoading(true);
 
-    if (!name.trim()) {
+    const cleanName = name.trim();
+    if (!cleanName) {
       setErrorMessage('Please enter your full name.');
       setIsLoading(false);
       return;
     }
 
-    if (!mobile.trim() || mobile.trim().length < 10) {
+    const cleanMobile = mobile.trim();
+    if (!cleanMobile || cleanMobile.length < 10) {
       setErrorMessage('Please enter a valid 10-digit mobile number.');
       setIsLoading(false);
       return;
     }
 
-    const res = await register(name, mobile, password);
+    if (!password.trim() || password.trim().length < 4) {
+      setErrorMessage('Please create a password with at least 4 characters.');
+      setIsLoading(false);
+      return;
+    }
+
+    const res = await register(cleanName, cleanMobile, password);
 
     if (res.success) {
       router.replace('/app/onboarding');
@@ -74,16 +82,16 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
-                {t('auth.fullName', 'Farmer Name')} *
+                {t('auth.fullName', 'Farmer Full Name')} *
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-[#667267] absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Ram Singh"
+                  placeholder="e.g. Rajesh Kumar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
@@ -91,7 +99,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
                 {t('auth.mobileNumber', 'Mobile Number')} *
               </label>
@@ -100,15 +108,16 @@ export default function RegisterPage() {
                 <input
                   type="tel"
                   required
-                  placeholder="e.g. 9876543210"
+                  placeholder="Enter 10-digit mobile number"
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  maxLength={10}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
                 />
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
                 {t('auth.password', 'Create Password')} *
               </label>
@@ -117,7 +126,7 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   required
-                  placeholder="••••••••"
+                  placeholder="Create a secure password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
@@ -129,7 +138,7 @@ export default function RegisterPage() {
               type="submit"
               variant="primary"
               size="md"
-              disabled={isLoading}
+              disabled={isLoading || !name.trim() || !mobile.trim() || !password.trim()}
               className="w-full justify-center"
               icon={<ArrowRight className="w-4 h-4" />}
             >

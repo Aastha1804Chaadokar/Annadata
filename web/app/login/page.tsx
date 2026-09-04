@@ -12,8 +12,8 @@ import { Sprout, Phone, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 export default function LoginPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [mobile, setMobile] = useState<string>('9876543210');
-  const [password, setPassword] = useState<string>('123456');
+  const [mobile, setMobile] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -22,13 +22,20 @@ export default function LoginPage() {
     setErrorMessage(null);
     setIsLoading(true);
 
-    if (!mobile.trim() || mobile.trim().length < 10) {
+    const cleanMobile = mobile.trim();
+    if (!cleanMobile || cleanMobile.length < 10) {
       setErrorMessage('Please enter a valid 10-digit mobile number.');
       setIsLoading(false);
       return;
     }
 
-    const res = await login(mobile, password);
+    if (!password.trim()) {
+      setErrorMessage('Please enter your password.');
+      setIsLoading(false);
+      return;
+    }
+
+    const res = await login(cleanMobile, password);
 
     if (res.success) {
       if (hasCompletedOnboarding()) {
@@ -37,7 +44,7 @@ export default function LoginPage() {
         router.replace('/app/onboarding');
       }
     } else {
-      setErrorMessage(res.error || 'Login failed. Please check your credentials.');
+      setErrorMessage(res.error || 'Login failed. Please check your mobile number and password.');
       setIsLoading(false);
     }
   };
@@ -56,7 +63,7 @@ export default function LoginPage() {
               {t('auth.welcomeBack', 'Welcome back')}
             </h1>
             <p className="text-xs sm:text-sm text-[#667267]">
-              {t('auth.loginSubtitle', 'Login to your farm to view soil health, recommendations, and market intelligence.')}
+              {t('auth.loginSubtitle', 'Access your farm dashboard and AI crop recommendations')}
             </p>
           </div>
 
@@ -73,7 +80,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
                 {t('auth.mobileNumber', 'Mobile Number')} *
               </label>
@@ -82,15 +89,16 @@ export default function LoginPage() {
                 <input
                   type="tel"
                   required
-                  placeholder="e.g. 9876543210"
+                  placeholder="Enter 10-digit mobile number"
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  maxLength={10}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
                 />
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
                 {t('auth.password', 'Password')} *
               </label>
@@ -99,7 +107,7 @@ export default function LoginPage() {
                 <input
                   type="password"
                   required
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
@@ -107,16 +115,11 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Quick Demo Fill Note */}
-            <div className="p-3 rounded-xl bg-[#EEF5E8] border border-[#DCECCF] text-[11px] text-[#285C32]">
-              <strong>Demo Account:</strong> Mobile <code className="font-bold">9876543210</code> • Pass <code className="font-bold">123456</code>
-            </div>
-
             <Button
               type="submit"
               variant="primary"
               size="md"
-              disabled={isLoading}
+              disabled={isLoading || !mobile.trim() || !password.trim()}
               className="w-full justify-center"
               icon={<ArrowRight className="w-4 h-4" />}
             >
@@ -126,7 +129,7 @@ export default function LoginPage() {
             <div className="pt-4 border-t border-stone-100 text-center text-xs text-[#667267]">
               <span>{t('auth.noAccount', "Don't have an account?")} </span>
               <Link href="/register" className="font-bold text-[#3F7D3A] hover:underline">
-                {t('navbar.register', 'Create Account')}
+                {t('navbar.register', 'Register')}
               </Link>
             </div>
           </form>

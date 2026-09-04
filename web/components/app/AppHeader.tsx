@@ -33,7 +33,19 @@ export const AppHeader: React.FC = () => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
-    setProfile(getFarmerProfile());
+    const p = getFarmerProfile();
+    if (typeof window !== 'undefined') {
+      const authUserStr = localStorage.getItem('annadata_auth_user');
+      if (authUserStr) {
+        try {
+          const authUser = JSON.parse(authUserStr);
+          if (authUser?.name) {
+            p.name = authUser.name;
+          }
+        } catch (e) {}
+      }
+    }
+    setProfile(p);
   }, []);
 
   const SIDEBAR_ITEMS = [

@@ -13,6 +13,7 @@ import { formatCropDisplay } from '@/lib/cropDataset';
 import { Button } from '@/components/ui/Button';
 import { AppHeader } from '@/components/app/AppHeader';
 import { API_ENDPOINTS } from '@/lib/apiConfig';
+import { getAuthUser } from '@/lib/authService';
 import {
   Sprout,
   User,
@@ -41,33 +42,36 @@ function OnboardingContent() {
   const [detectedLocation, setDetectedLocation] = useState<ReverseGeocodeResponse | null>(null);
   const [isLocationConfirmed, setIsLocationConfirmed] = useState<boolean>(false);
 
-  const [formData, setFormData] = useState<FarmerProfile>({
-    name: 'Ram Singh',
-    mobile: '9876543210',
-    state: 'Madhya Pradesh',
-    district: 'Indore',
-    village: 'Sanwer',
-    language: 'Hindi (हिन्दी)',
-    farmingType: 'Small farmer',
-    mainCrop: 'Soybean (सोयाबीन)',
-    currentCrop: {
-      cropId: 'soybean',
-      cropName: 'Soybean',
-      cropNameHi: 'सोयाबीन',
-      category: 'PULSES',
-    },
-    landSize: '3.5',
-    landUnit: 'Acres',
-    irrigation: 'Rain-fed',
-    channelPreference: 'Smartphone',
-    createdAt: new Date().toISOString(),
-    structuredLocation: {
-      village: 'Sanwer',
-      district: 'Indore',
+  const [formData, setFormData] = useState<FarmerProfile>(() => {
+    const authUser = getAuthUser();
+    return {
+      name: authUser?.name || '',
+      mobile: authUser?.mobile || '',
       state: 'Madhya Pradesh',
-      country: 'India',
-      source: 'manual',
-    },
+      district: 'Bhopal',
+      village: '',
+      language: 'Hindi (हिन्दी)',
+      farmingType: 'Small farmer',
+      mainCrop: 'Soybean (सोयाबीन)',
+      currentCrop: {
+        cropId: 'soybean',
+        cropName: 'Soybean',
+        cropNameHi: 'सोयाबीन',
+        category: 'PULSES',
+      },
+      landSize: '3.0',
+      landUnit: 'Acres',
+      irrigation: 'Rain-fed',
+      channelPreference: 'Smartphone',
+      createdAt: new Date().toISOString(),
+      structuredLocation: {
+        village: '',
+        district: 'Bhopal',
+        state: 'Madhya Pradesh',
+        country: 'India',
+        source: 'manual',
+      },
+    };
   });
 
   // Handle Location Detection Request

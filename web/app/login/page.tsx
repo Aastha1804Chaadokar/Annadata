@@ -89,11 +89,11 @@ export default function LoginPage() {
                 <input
                   type="tel"
                   required
-                  placeholder="Enter 10-digit mobile number"
+                  placeholder="e.g. 9876543210"
                   value={mobile}
                   maxLength={10}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
                 />
               </div>
             </div>
@@ -107,10 +107,10 @@ export default function LoginPage() {
                 <input
                   type="password"
                   required
-                  placeholder="Enter your password"
+                  placeholder="e.g. ••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
                 />
               </div>
             </div>

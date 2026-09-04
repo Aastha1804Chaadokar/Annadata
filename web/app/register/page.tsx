@@ -84,17 +84,17 @@ export default function RegisterPage() {
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
-                {t('auth.fullName', 'Farmer Full Name')} *
+                {t('auth.fullName', 'Full Name')} *
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-[#667267] absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Rajesh Kumar"
+                  placeholder="e.g. Ram Singh"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
                 />
               </div>
             </div>
@@ -108,28 +108,28 @@ export default function RegisterPage() {
                 <input
                   type="tel"
                   required
-                  placeholder="Enter 10-digit mobile number"
+                  placeholder="e.g. 9876543210"
                   value={mobile}
                   maxLength={10}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
-                {t('auth.password', 'Create Password')} *
+                {t('auth.password', 'Password')} *
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-[#667267] absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   required
-                  placeholder="Create a secure password"
+                  placeholder="e.g. ••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
                 />
               </div>
             </div>

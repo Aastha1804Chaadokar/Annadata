@@ -63,7 +63,7 @@ export const Navbar: React.FC = () => {
     { name: t('navbar.features', 'Features'), href: '/features' },
     { name: t('navbar.forFarmers', 'For Farmers'), href: '/for-farmers' },
     { name: t('navbar.farmLocation', 'Farm Location'), href: '/farm-location' },
-    { name: t('navbar.accessOptions', 'Access Options'), href: '/access-options' },
+    { name: t('navbar.download', '📱 Download App'), href: '/download' },
     { name: t('navbar.about', 'About'), href: '/about' },
   ];
 

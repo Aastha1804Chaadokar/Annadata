@@ -70,6 +70,7 @@ export default function LoginPage() {
           {/* Form Card */}
           <form
             onSubmit={handleLogin}
+            autoComplete="off"
             className="bg-white rounded-3xl p-6 sm:p-8 border border-[#3F7D3A]/15 shadow-sm space-y-5"
           >
             {/* Error Alert */}
@@ -89,6 +90,7 @@ export default function LoginPage() {
                 <input
                   type="tel"
                   required
+                  autoComplete="off"
                   placeholder="e.g. 9876543210"
                   value={mobile}
                   maxLength={10}
@@ -107,6 +109,7 @@ export default function LoginPage() {
                 <input
                   type="password"
                   required
+                  autoComplete="new-password"
                   placeholder="e.g. ••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

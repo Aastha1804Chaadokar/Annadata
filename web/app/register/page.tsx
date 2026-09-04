@@ -73,6 +73,7 @@ export default function RegisterPage() {
           {/* Form Card */}
           <form
             onSubmit={handleRegister}
+            autoComplete="off"
             className="bg-white rounded-3xl p-6 sm:p-8 border border-[#3F7D3A]/15 shadow-sm space-y-5"
           >
             {errorMessage && (
@@ -91,6 +92,7 @@ export default function RegisterPage() {
                 <input
                   type="text"
                   required
+                  autoComplete="off"
                   placeholder="e.g. Ram Singh"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -108,6 +110,7 @@ export default function RegisterPage() {
                 <input
                   type="tel"
                   required
+                  autoComplete="off"
                   placeholder="e.g. 9876543210"
                   value={mobile}
                   maxLength={10}
@@ -126,6 +129,7 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   required
+                  autoComplete="new-password"
                   placeholder="e.g. ••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

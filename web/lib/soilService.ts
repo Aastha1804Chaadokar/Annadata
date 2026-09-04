@@ -1,4 +1,5 @@
 import { SoilReportInput, SoilReportRecord, SoilInterpretation, SoilParameterStatus } from '@/types/soil';
+import { API_ENDPOINTS } from './apiConfig';
 
 const SOIL_REPORTS_STORAGE_KEY = 'annadata_soil_reports';
 
@@ -244,7 +245,7 @@ export const saveSoilReport = async (input: SoilReportInput): Promise<SoilReport
 
   // Try API request in background
   try {
-    fetch('http://localhost:5000/api/v1/soil-reports', {
+    fetch(API_ENDPOINTS.SOIL_REPORTS, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newRecord),

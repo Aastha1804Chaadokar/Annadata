@@ -1,4 +1,5 @@
 import { DeviceCoordinates, ReverseGeocodeResponse, GeolocationStatus } from '@/types/location';
+import { API_ENDPOINTS } from './apiConfig';
 
 export async function requestDeviceCoordinates(): Promise<{
   coordinates?: DeviceCoordinates;
@@ -68,7 +69,7 @@ export async function fetchReverseGeocode(
 ): Promise<ReverseGeocodeResponse> {
   try {
     const res = await fetch(
-      `http://localhost:5000/api/v1/location/reverse-geocode?lat=${latitude}&lng=${longitude}${
+      `${API_ENDPOINTS.LOCATION_REVERSE_GEOCODE}?lat=${latitude}&lng=${longitude}${
         accuracy ? `&accuracy=${accuracy}` : ''
       }`
     );

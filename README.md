@@ -31,6 +31,14 @@ To become the most trusted digital companion for every Indian farmer by democrat
 
 ---
 
+## 🚀 Quick Deployment
+
+- **Backend (Render)**: Deploy via Render Blueprint [`render.yaml`](./render.yaml) or Web Service.
+- **Frontend (Vercel)**: Import repository and deploy Next.js frontend with 1 click.
+- 📖 **Full Step-by-Step Guide**: Read the [Deployment Guide (DEPLOYMENT.md)](./DEPLOYMENT.md).
+
+---
+
 ## 🛠️ Technology Stack
 
 | Service | Technology | Description |

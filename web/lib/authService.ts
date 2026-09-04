@@ -1,3 +1,5 @@
+import { API_ENDPOINTS } from './apiConfig';
+
 export interface AuthUser {
   id?: string;
   name: string;
@@ -36,7 +38,7 @@ export const getAuthUser = (): AuthUser | null => {
 
 export const login = async (mobile: string, password?: string): Promise<AuthResponse> => {
   try {
-    const response = await fetch('http://localhost:5000/api/v1/auth/login', {
+    const response = await fetch(API_ENDPOINTS.AUTH_LOGIN, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mobile, password: password || '123456' }),
@@ -72,7 +74,7 @@ export const register = async (
   password?: string
 ): Promise<AuthResponse> => {
   try {
-    const response = await fetch('http://localhost:5000/api/v1/auth/register', {
+    const response = await fetch(API_ENDPOINTS.AUTH_REGISTER, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, mobile, password: password || '123456' }),
@@ -100,7 +102,7 @@ export const register = async (
 
 export const logout = async (): Promise<boolean> => {
   try {
-    await fetch('http://localhost:5000/api/v1/auth/logout', {
+    await fetch(API_ENDPOINTS.AUTH_LOGOUT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });

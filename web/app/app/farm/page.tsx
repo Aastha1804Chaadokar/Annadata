@@ -14,6 +14,7 @@ import { AppSidebar } from '@/components/app/AppSidebar';
 import { AppHeader } from '@/components/app/AppHeader';
 import { ProtectedRoute } from '@/components/app/ProtectedRoute';
 import { Button } from '@/components/ui/Button';
+import { API_ENDPOINTS } from '@/lib/apiConfig';
 import {
   Tractor,
   User,
@@ -109,7 +110,7 @@ function MyFarmContent() {
 
     // Send PUT request to backend
     try {
-      await fetch('http://localhost:5000/api/v1/farmers/profile', {
+      await fetch(API_ENDPOINTS.FARMER_PROFILE, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editData),

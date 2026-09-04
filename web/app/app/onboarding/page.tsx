@@ -12,6 +12,7 @@ import { CropSelect } from '@/components/ui/CropSelect';
 import { formatCropDisplay } from '@/lib/cropDataset';
 import { Button } from '@/components/ui/Button';
 import { AppHeader } from '@/components/app/AppHeader';
+import { API_ENDPOINTS } from '@/lib/apiConfig';
 import {
   Sprout,
   User,
@@ -201,7 +202,7 @@ function OnboardingContent() {
 
       // 2. Send to backend REST API
       try {
-        await fetch('http://localhost:5000/api/v1/farmers/profile', {
+        await fetch(API_ENDPOINTS.FARMER_PROFILE, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),

@@ -1,5 +1,6 @@
 import { CropRecommendationInput, RankedCropResult, SavedCropRecommendation } from '@/types/crop';
 import { CROP_DATASET } from './cropKnowledgeData';
+import { API_ENDPOINTS } from './apiConfig';
 
 const RECOMMENDATION_HISTORY_KEY = 'annadata_crop_recommendation_history';
 
@@ -160,7 +161,7 @@ export const saveCropRecommendationSession = (
 
   // Attempt backend API call
   try {
-    fetch('http://localhost:5000/api/v1/crop-recommendations', {
+    fetch(API_ENDPOINTS.CROP_RECOMMENDATIONS, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(record),

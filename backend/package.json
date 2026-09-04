@@ -2,10 +2,11 @@
   "name": "annadata-backend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Annadata REST API backend built with Express, TypeScript, and MongoDB.",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "tsc && node dist/index.js",
     "build": "tsc",
     "start": "node dist/index.js"
   },

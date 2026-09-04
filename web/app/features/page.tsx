@@ -1,5 +1,8 @@
-import type { Metadata } from 'next';
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { PageHero } from '@/components/ui/PageHero';
 import { Button } from '@/components/ui/Button';
 import {
@@ -15,93 +18,89 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Annadata Features | Smart Agriculture for India',
-  description:
-    'Explore Annadata’s 8 core features: Soil Health Intelligence, Crop Recommendations, Weather Alerts, Voice AI, Crop Health Vision, Mandi Price Insights, IVR Access, and 11 Indian Languages.',
-};
-
 export default function FeaturesPage() {
+  const { t } = useTranslation();
+
   const FEATURES = [
     {
       id: 'soil',
       num: 'FEATURE 01',
-      title: '🌱 Soil Health Intelligence',
-      subtitle: 'Soil Test Card Digitization',
-      desc: 'Parses official Soil Health Card test parameters — Nitrogen, Phosphorus, Potassium, Soil pH, and Organic Carbon — to recommend precise fertilizer dosages.',
-      disclaimer: 'Official Soil Health Cards are required for exact laboratory NPK dosage calculations.',
+      title: `🌱 ${t('soil.title', 'Soil Health Intelligence')}`,
+      subtitle: t('features.f1Sub', 'Soil Test Card Digitization'),
+      desc: t('features.f1Desc', 'Parses official Soil Health Card test parameters — Nitrogen, Phosphorus, Potassium, Soil pH, and Organic Carbon — to recommend precise fertilizer dosages.'),
+      disclaimer: t('features.f1Disc', 'Official Soil Health Cards are required for exact laboratory NPK dosage calculations.'),
       icon: <Sprout className="w-6 h-6 text-[#3F7D3A]" />,
-      badge: 'Soil Diagnostics',
+      badge: t('features.f1Badge', 'Soil Diagnostics'),
     },
     {
       id: 'crop',
       num: 'FEATURE 02',
-      title: '🌾 Crop Recommendation Engine',
-      subtitle: 'Multi-Factor Agronomic Match',
-      desc: 'Recommends optimal crop options based on soil type, seasonal weather forecast, local water availability, and historical Mandi market trends.',
-      disclaimer: 'Demonstration agronomic matching model.',
+      title: `🌾 ${t('cropRec.title', 'Crop Recommendation Engine')}`,
+      subtitle: t('features.f2Sub', 'Multi-Factor Agronomic Match'),
+      desc: t('features.f2Desc', 'Recommends optimal crop options based on soil type, seasonal weather forecast, local water availability, and historical Mandi market trends.'),
+      disclaimer: t('features.f2Disc', 'Demonstration agronomic matching model.'),
       icon: <Sparkles className="w-6 h-6 text-[#E8B94A]" />,
-      badge: 'Yield Optimization',
+      badge: t('features.f2Badge', 'Yield Optimization'),
     },
     {
       id: 'weather',
       num: 'FEATURE 03',
-      title: '🌦 Weather Intelligence',
-      subtitle: 'Micro-Climate Telemetry',
-      desc: 'Delivers localized temperature, rainfall probability, humidity, and wind warnings so farmers know when to sow, irrigate, spray, or harvest.',
-      disclaimer: 'Integrates with localized IMD weather streams.',
+      title: `🌦 ${t('weather.title', 'Weather Intelligence • Mausam (मौसम)')}`,
+      subtitle: t('features.f3Sub', 'Micro-Climate Telemetry'),
+      desc: t('features.f3Desc', 'Delivers localized temperature, rainfall probability, humidity, and wind warnings so farmers know when to sow, irrigate, spray, or harvest.'),
+      disclaimer: t('features.f3Disc', 'Integrates with localized IMD weather streams.'),
       icon: <CloudSun className="w-6 h-6 text-[#6FA8B8]" />,
-      badge: 'Real-Time Alerts',
+      badge: t('features.f3Badge', 'Real-Time Alerts'),
     },
     {
       id: 'health',
       num: 'FEATURE 04',
-      title: '📷 Crop Health Scan (Future Vision)',
-      subtitle: 'Symptom Pattern Scan',
-      desc: 'Allows farmers to photograph leaves, stems, or fruits. Identifies visible symptom patterns and provides educational next steps.',
-      disclaimer: 'Educational advisory tool — does not replace certified agricultural extension diagnostic officers.',
+      title: `📷 ${t('dashboard.cropHealthTitle', 'Crop Health Scan')}`,
+      subtitle: t('features.f4Sub', 'Symptom Pattern Scan'),
+      desc: t('features.f4Desc', 'Allows farmers to photograph leaves, stems, or fruits. Identifies visible symptom patterns and provides educational next steps.'),
+      disclaimer: t('features.f4Disc', 'Educational advisory tool — does not replace certified agricultural extension diagnostic officers.'),
       icon: <Camera className="w-6 h-6 text-[#3F7D3A]" />,
-      badge: 'Image Vision',
+      badge: t('features.f4Badge', 'Image Vision'),
     },
     {
       id: 'ai',
       num: 'FEATURE 05',
-      title: '🤖 AI Farmer Assistant',
-      subtitle: 'Conversational Advisory',
-      desc: 'Farmers ask questions using text or voice in their native language and receive plain-spoken agricultural guidance.',
-      disclaimer: 'AI assistant trained on agricultural extension guidelines.',
+      title: `🤖 ${t('assistant.title', 'Ask Annadata AI Assistant')}`,
+      subtitle: t('features.f5Sub', 'Conversational Advisory'),
+      desc: t('features.f5Desc', 'Farmers ask questions using text or voice in their native language and receive plain-spoken agricultural guidance.'),
+      disclaimer: t('features.f5Disc', 'AI assistant trained on agricultural extension guidelines.'),
       icon: <Bot className="w-6 h-6 text-[#3F7D3A]" />,
-      badge: 'Conversational AI',
+      badge: t('features.f5Badge', 'Conversational AI'),
     },
     {
       id: 'market',
       num: 'FEATURE 06',
-      title: '💰 Market & Mandi Insights',
-      subtitle: 'Price Trend Advisory',
-      desc: 'Tracks local Mandi prices, nearby markets, and seasonal commodity demand trends to assist farmers in timing crop sales.',
-      disclaimer: 'Demo market telemetry model. Live API integration coming soon.',
+      title: `💰 ${t('dashboard.marketTitle', 'Market & Mandi Insights')}`,
+      subtitle: t('features.f6Sub', 'Price Trend Advisory'),
+      desc: t('features.f6Desc', 'Tracks local Mandi prices, nearby markets, and seasonal commodity demand trends to assist farmers in timing crop sales.'),
+      disclaimer: t('features.f6Disc', 'Demo market telemetry model.'),
       icon: <TrendingUp className="w-6 h-6 text-[#9A7048]" />,
-      badge: 'Price Trends',
+      badge: t('features.f6Badge', 'Price Trends'),
     },
     {
       id: 'ivr',
       num: 'FEATURE 07',
-      title: '📞 Basic Phone IVR Helpline',
-      subtitle: 'Toll-Free Voice Helpline',
-      desc: 'Enables farmers without internet or smartphones to dial a toll-free number, select their language, and receive automated voice weather & crop advisories.',
-      disclaimer: 'Coming soon for keypad phone users.',
+      title: `📞 ${t('features.f7Title', 'Basic Phone IVR Helpline')}`,
+      subtitle: t('features.f7Sub', 'Toll-Free Voice Helpline'),
+      desc: t('features.f7Desc', 'Enables farmers without internet or smartphones to dial a toll-free number, select their language, and receive automated voice weather & crop advisories.'),
+      disclaimer: t('features.f7Disc', 'Coming soon for keypad phone users.'),
       icon: <PhoneCall className="w-6 h-6 text-[#9A7048]" />,
-      badge: '100% Offline Access',
+      badge: t('features.f7Badge', '100% Offline Access'),
     },
     {
       id: 'languages',
       num: 'FEATURE 08',
-      title: '🌐 11 Indian Regional Languages',
-      subtitle: 'Inclusive Multilingual UI',
-      desc: 'Supports Hindi, English, Marathi, Gujarati, Punjabi, Bengali, Tamil, Telugu, Kannada, Malayalam, and Odia across text and voice interfaces.',
-      disclaimer: 'Fully localized interface.',
+      title: `🌐 ${t('features.f8Title', '7 Regional Indian Languages')}`,
+      subtitle: t('features.f8Sub', 'Inclusive Multilingual UI'),
+      desc: t('features.f8Desc', 'Supports Hindi, English, Marathi, Tamil, Telugu, Kannada, and Bengali across text and voice interfaces.'),
+      disclaimer: t('features.f8Disc', 'Fully localized interface.'),
       icon: <Globe className="w-6 h-6 text-[#3F7D3A]" />,
-      badge: 'Multilingual',
+      badge: t('features.f8Badge', 'Multilingual'),
     },
   ];
 
@@ -109,22 +108,18 @@ export default function FeaturesPage() {
     'Hindi (हिन्दी)',
     'English',
     'Marathi (मराठी)',
-    'Gujarati (ગુજરાતી)',
-    'Punjabi (ਪੰਜਾਬੀ)',
     'Bengali (বাংলা)',
     'Tamil (தமிழ்)',
     'Telugu (తెలుగు)',
     'Kannada (ಕನ್ನಡ)',
-    'Malayalam (മലയാളം)',
-    'Odia (ଓଡ଼ିଆ)',
   ];
 
   return (
     <main className="min-h-screen bg-[#F8FAF3]">
       <PageHero
-        badge="Platform Capabilities"
-        title="Everything a farmer needs, in one place."
-        subtitle="Explore Annadata's 8 core feature modules designed for soil intelligence, localized guidance, market awareness, and inclusive access."
+        badge={t('features.capBadge', 'Platform Capabilities')}
+        title={t('features.heroTitle', 'Everything a farmer needs, in one place.')}
+        subtitle={t('features.heroSub', "Explore Annadata's 8 core feature modules designed for soil intelligence, localized guidance, market awareness, and inclusive access.")}
         icon={<Sparkles className="w-4 h-4 text-[#E8B94A]" />}
       />
 
@@ -171,10 +166,10 @@ export default function FeaturesPage() {
           <div className="mt-16 p-8 rounded-3xl bg-white border border-[#3F7D3A]/20 shadow-sm space-y-4">
             <div className="flex items-center gap-2 text-[#285C32] font-black text-xl">
               <Globe className="w-6 h-6 text-[#3F7D3A]" />
-              <span>Supported Regional Languages (11)</span>
+              <span>{t('features.suppLangTitle', 'Supported Regional Languages (7)')}</span>
             </div>
             <p className="text-sm text-[#667267]">
-              Annadata breaking down language barriers so every farmer can interact in their mother tongue:
+              {t('features.suppLangSub', 'Annadata breaking down language barriers so every farmer can interact in their mother tongue:')}
             </p>
             <div className="flex flex-wrap gap-2.5 pt-2">
               {LANGUAGES_LIST.map((lang) => (
@@ -193,11 +188,11 @@ export default function FeaturesPage() {
       {/* CTA Banner */}
       <section className="py-16 bg-[#EEF5E8] border-t border-[#DCECCF]">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-4">
-          <h2 className="text-3xl font-black text-[#285C32]">See For Farmers Guide</h2>
-          <p className="text-sm text-[#667267]">Learn how Annadata solves real daily challenges for Indian farmers.</p>
+          <h2 className="text-3xl font-black text-[#285C32]">{t('features.ctaTitle', 'See For Farmers Guide')}</h2>
+          <p className="text-sm text-[#667267]">{t('features.ctaSub', 'Learn how Annadata solves real daily challenges for Indian farmers.')}</p>
           <Link href="/for-farmers">
             <Button variant="primary" size="md" icon={<ArrowRight className="w-4 h-4" />}>
-              Read For Farmers Guide
+              {t('features.ctaBtn', 'Read For Farmers Guide')}
             </Button>
           </Link>
         </div>

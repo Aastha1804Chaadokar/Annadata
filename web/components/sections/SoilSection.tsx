@@ -1,130 +1,128 @@
 'use client';
 
 import React from 'react';
-import { SectionHeading } from '@/components/ui/SectionHeading';
-import { DEMO_SOIL_CARD } from '@/lib/constants';
-import { motion } from 'framer-motion';
-import { AlertCircle, FileText } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/Button';
+import { Beaker, ArrowRight, ShieldCheck, AlertCircle, FileCheck, Camera } from 'lucide-react';
 
 export const SoilSection: React.FC = () => {
+  const { t } = useTranslation();
+
+  const PARAMETERS = [
+    { name: 'Soil pH', value: '6.8', status: 'Optimal / Neutral', color: 'text-[#3F7D3A]', bg: 'bg-[#EEF5E8]' },
+    { name: 'Available Nitrogen (N)', value: '280 kg/ha', status: 'Medium', color: 'text-[#D8B45A]', bg: 'bg-[#FAF7EE]' },
+    { name: 'Available Phosphorus (P)', value: '18 kg/ha', status: 'Medium', color: 'text-[#D8B45A]', bg: 'bg-[#FAF7EE]' },
+    { name: 'Available Potassium (K)', value: '310 kg/ha', status: 'High / Sufficient', color: 'text-[#3F7D3A]', bg: 'bg-[#EEF5E8]' },
+    { name: 'Organic Carbon (OC)', value: '0.62 %', status: 'Medium', color: 'text-[#D8B45A]', bg: 'bg-[#FAF7EE]' },
+  ];
+
   return (
-    <section id="soil" className="py-24 bg-[#FFF8E8] relative overflow-hidden">
+    <section id="soil" className="py-24 bg-white border-y border-[#173F2A]/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          badge="Soil Health Intelligence"
-          title="Know Your Soil."
-          subtitle="Healthy soil produces bountiful crops. Annadata organizes Soil Health Card parameters into clear, actionable fertilizer and soil management recommendations."
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          {/* LEFT: Section Headline & Scientific Boundary Content (6 cols) */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EEF5E8] text-[#173F2A] text-xs font-bold uppercase tracking-wider">
+              <Beaker className="w-3.5 h-3.5 text-[#3F7D3A]" />
+              <span>{t('soil.eyebrow', 'SOIL HEALTH INTELLIGENCE')}</span>
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center mt-12">
-          {/* Left Column: Soil Cross-Section Visual with Roots */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-6"
-          >
-            <div className="relative rounded-3xl overflow-hidden border-2 border-[#9A7048]/20 shadow-lg bg-gradient-to-b from-[#EEF5E8] via-[#FFF8E8] to-[#9A7048]/30 p-8 text-[#285C32]">
-              {/* Plant Above Ground */}
-              <div className="flex justify-center -mt-2 mb-4">
-                <div className="relative flex flex-col items-center">
-                  <div className="w-1.5 h-16 bg-[#3F7D3A] rounded-full" />
-                  <div className="w-12 h-6 bg-[#3F7D3A] rounded-t-full -mt-4 border-2 border-[#DCECCF]" />
-                </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#173F2A] tracking-tight leading-tight">
+              {t('soil.heading', 'Know what your soil is telling you.')}
+            </h2>
+
+            <p className="text-sm sm:text-base text-[#5F6F62] leading-relaxed font-medium">
+              {t(
+                'soil.description',
+                'Healthy crops start with balanced soil nutrients. Annadata interprets certified laboratory Soil Health Card parameters to prevent over-fertilization and boost yield.'
+              )}
+            </p>
+
+            {/* Clear Scientific Boundary Box */}
+            <div className="p-5 rounded-3xl bg-[#FAF7EE] border border-[#D8B45A]/30 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#173F2A]">
+                <ShieldCheck className="w-4 h-4 text-[#3F7D3A]" />
+                <span>Scientific Integrity Standard</span>
               </div>
-
-              {/* Surface Soil Line */}
-              <div className="border-b-2 border-dashed border-[#9A7048]/40 my-4 text-center">
-                <span className="bg-[#FFF8E8] border border-[#9A7048]/30 px-3.5 py-1 rounded-full text-xs font-bold text-[#285C32]">
-                  Top Soil Horizon (0 - 15 cm)
-                </span>
-              </div>
-
-              {/* Root System Simulation */}
-              <div className="relative h-44 my-4 flex items-center justify-center">
-                <svg className="w-full h-full opacity-90" viewBox="0 0 300 150" fill="none">
-                  <path d="M150 0 Q150 40 120 80 Q100 110 80 140" stroke="#9A7048" strokeWidth="3" fill="none" />
-                  <path d="M150 0 Q150 40 180 80 Q200 110 220 140" stroke="#9A7048" strokeWidth="3" fill="none" />
-                  <path d="M150 0 Q150 60 150 145" stroke="#9A7048" strokeWidth="4" fill="none" />
-                  <path d="M150 30 Q120 60 90 90" stroke="#E8B94A" strokeWidth="2" fill="none" />
-                  <path d="M150 30 Q180 60 210 90" stroke="#E8B94A" strokeWidth="2" fill="none" />
-                </svg>
-
-                {/* Nutrient Badges */}
-                <div className="absolute top-4 left-6 bg-white border border-[#3F7D3A]/30 px-3 py-1 rounded-xl text-xs font-extrabold text-[#3F7D3A] shadow-sm">
-                  N (Nitrogen)
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 bg-white rounded-2xl border border-stone-200/80 space-y-1">
+                  <strong className="text-[#17201A] flex items-center gap-1.5">
+                    <FileCheck className="w-3.5 h-3.5 text-[#3F7D3A]" />
+                    Soil Test Data (Lab)
+                  </strong>
+                  <p className="text-[11px] text-[#5F6F62]">
+                    Precise chemical analysis for Nitrogen, Phosphorus, Potassium, and pH.
+                  </p>
                 </div>
-                <div className="absolute top-12 right-6 bg-white border border-[#E8B94A]/40 px-3 py-1 rounded-xl text-xs font-extrabold text-[#E8B94A] shadow-sm">
-                  P (Phosphorus)
+                <div className="p-3 bg-white rounded-2xl border border-stone-200/80 space-y-1">
+                  <strong className="text-[#17201A] flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-[#D8B45A]" />
+                    Indicative Soil Photo
+                  </strong>
+                  <p className="text-[11px] text-[#5F6F62]">
+                    Visual color assessment only. Does not replace laboratory testing.
+                  </p>
                 </div>
-                <div className="absolute bottom-6 left-12 bg-white border border-[#9A7048]/40 px-3 py-1 rounded-xl text-xs font-extrabold text-[#9A7048] shadow-sm">
-                  K (Potassium)
-                </div>
-                <div className="absolute bottom-6 right-12 bg-white border border-[#3F7D3A]/30 px-3 py-1 rounded-xl text-xs font-extrabold text-[#285C32] shadow-sm">
-                  pH 6.8
-                </div>
-              </div>
-
-              {/* Subsoil Label */}
-              <div className="border-t border-[#9A7048]/20 pt-3 text-center">
-                <span className="text-xs text-[#9A7048] font-semibold">Subsoil Layer & Root Moisture Absorption</span>
               </div>
             </div>
-          </motion.div>
 
-          {/* Right Column: Demo Soil Health Card Metrics */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-6 space-y-4"
-          >
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#3F7D3A]/10 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-stone-200">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-[#3F7D3A]" />
-                  <h3 className="font-bold text-lg text-[#285C32]">Sample Soil Health Card</h3>
+            <div className="pt-2">
+              <Link href="/app/soil">
+                <Button variant="primary" size="lg" icon={<ArrowRight className="w-4 h-4" />}>
+                  {t('soil.checkSoil', 'Check Soil Health')}
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT: Soil Health Card Digitized Dashboard Preview (6 cols) */}
+          <div className="lg:col-span-6">
+            <div className="bg-[#F7F6F0] rounded-3xl p-6 sm:p-8 border border-[#173F2A]/10 shadow-sm space-y-5">
+              <div className="flex items-center justify-between pb-4 border-b border-[#173F2A]/10">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#5F6F62] block">
+                    GOVERNMENT SOIL HEALTH CARD
+                  </span>
+                  <h3 className="text-lg font-bold text-[#17201A]">
+                    Sample Soil Nutrient Interpretation
+                  </h3>
                 </div>
-                <span className="px-3 py-1 bg-[#EEF5E8] text-[#285C32] text-xs font-bold rounded-full border border-[#DCECCF]">
-                  Digitized View
+                <span className="px-3 py-1 rounded-full bg-[#EEF5E8] text-[#173F2A] text-xs font-bold border border-[#173F2A]/10">
+                  ICAR Standards
                 </span>
               </div>
 
               {/* Parameter Rows */}
-              <div className="space-y-3">
-                {DEMO_SOIL_CARD.parameters.map((param) => (
-                  <div key={param.key} className="p-3.5 rounded-xl bg-[#F8FAF3] border border-stone-200/80 flex items-center justify-between">
+              <div className="space-y-2.5">
+                {PARAMETERS.map((param, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 bg-white rounded-2xl border border-stone-200/80 flex items-center justify-between shadow-xs"
+                  >
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-[#285C32]">{param.name} ({param.key})</span>
-                        <span className="text-xs text-[#667267]">Target: {param.target}</span>
-                      </div>
-                      <div className="text-sm font-bold text-[#243126] mt-0.5">{param.value}</div>
+                      <strong className="text-xs sm:text-sm text-[#17201A] block">
+                        {param.name}
+                      </strong>
+                      <span className="text-[11px] font-semibold text-[#5F6F62]">
+                        {param.value}
+                      </span>
                     </div>
-                    <span
-                      className="px-3 py-1 text-xs font-bold rounded-full"
-                      style={{
-                        backgroundColor: `${param.color}15`,
-                        color: param.color,
-                        border: `1px solid ${param.color}40`,
-                      }}
-                    >
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-extrabold ${param.bg} ${param.color}`}>
                       {param.status}
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* MANDATORY DISCLAIMER BOX */}
-            <div className="p-4 rounded-xl bg-white border border-[#E8B94A]/40 text-[#667267] text-xs flex items-start gap-3 shadow-sm">
-              <AlertCircle className="w-5 h-5 text-[#E8B94A] shrink-0 mt-0.5" />
-              <div>
-                <strong className="font-bold block text-sm text-[#285C32] mb-0.5">Laboratory Accuracy Notice</strong>
-                {DEMO_SOIL_CARD.notice}
-              </div>
+              {/* Disclaimer */}
+              <p className="text-[11px] text-[#5F6F62] italic flex items-center gap-1.5 pt-2">
+                <AlertCircle className="w-3.5 h-3.5 text-[#D8B45A] shrink-0" />
+                <span>Photo-based analysis provides an indicative assessment and does not replace laboratory testing.</span>
+              </p>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

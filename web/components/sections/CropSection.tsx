@@ -1,111 +1,155 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SectionHeading } from '@/components/ui/SectionHeading';
-import { DEMO_CROP_RECOMMENDATION } from '@/lib/constants';
-import { motion } from 'framer-motion';
-import { Check, Code2 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/Button';
+import { Sprout, ArrowRight, CheckCircle2, AlertCircle, Calendar, Droplets } from 'lucide-react';
 
-const CROP_TABS = [
-  { id: 'soybean', name: 'Soybean', score: 92, image: '🌾' },
-  { id: 'wheat', name: 'Wheat (गेहूँ)', score: 88, image: '🌾' },
-  { id: 'maize', name: 'Maize (मक्का)', score: 85, image: '🌽' },
-  { id: 'cotton', name: 'Cotton (कपास)', score: 79, image: '🌱' },
-];
+const SEASONS = ['Kharif (Monsoon)', 'Rabi (Winter)', 'Zaid (Summer)'];
 
 export const CropSection: React.FC = () => {
-  const [selectedCrop, setSelectedCrop] = useState(CROP_TABS[0]);
+  const { t } = useTranslation();
+  const [activeSeason, setActiveSeason] = useState('Kharif (Monsoon)');
+
+  const CROPS = [
+    {
+      name: 'Soybean (सोयाबीन)',
+      score: 94,
+      season: 'Kharif (Monsoon)',
+      soilSuit: 'Well-drained Black Soil (pH 6.5 - 7.5)',
+      reasons: ['Optimal nitrogen balance in field', 'Ideal rainfall pattern expected in next 30 days', 'High local Mandi demand in Indore'],
+      cautions: 'Ensure soil drainage during heavy showers.',
+    },
+    {
+      name: 'Wheat (गेहूँ - Sharbati)',
+      score: 91,
+      season: 'Rabi (Winter)',
+      soilSuit: 'Clay loam to heavy clay (pH 6.0 - 7.5)',
+      reasons: ['Excellent potassium reserve for grain fill', 'Cool winter temperatures anticipated', 'Government MSP benchmark available'],
+      cautions: 'Requires 4-5 timed irrigations.',
+    },
+    {
+      name: 'Gram / Chana (चना)',
+      score: 87,
+      season: 'Rabi (Winter)',
+      soilSuit: 'Medium to heavy soils (pH 6.0 - 8.0)',
+      reasons: ['Fixes atmospheric nitrogen for next crop', 'Low water requirement', 'Excellent crop rotation benefit after Soybean'],
+      cautions: 'Watch for wilt during early seedling stage.',
+    },
+  ];
+
+  const currentCrop = CROPS.find((c) => c.season.includes(activeSeason.split(' ')[0])) || CROPS[0];
 
   return (
-    <section id="features" className="py-24 bg-[#F8FAF3] relative">
+    <section id="crop-recommendation" className="py-24 bg-[#F7F6F0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          badge="AI Recommendation Demo"
-          title="Choose the right crop."
-          subtitle="Match your soil profile, rainfall forecast, and local Mandi pricing with optimal crop recommendations to maximize yield and market return."
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          {/* LEFT: Crop Recommendation Visual Demonstration (7 cols) */}
+          <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-[#173F2A]/10 shadow-sm space-y-6">
+            {/* Season Selector Tabs */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-stone-100">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[#5F6F62]">
+                Select Season Model:
+              </span>
+              <div className="flex items-center gap-1.5 p-1 rounded-full bg-[#F7F6F0] border border-[#173F2A]/10">
+                {SEASONS.map((season) => (
+                  <button
+                    key={season}
+                    onClick={() => setActiveSeason(season)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                      activeSeason === season
+                        ? 'bg-[#173F2A] text-white shadow-xs'
+                        : 'text-[#5F6F62] hover:text-[#173F2A]'
+                    }`}
+                  >
+                    {season.split(' ')[0]}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Crop Selector Tabs */}
-          <div className="lg:col-span-4 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#667267] mb-2">
-              Select Crop Model Demo:
-            </h4>
-            {CROP_TABS.map((crop) => (
-              <button
-                key={crop.id}
-                onClick={() => setSelectedCrop(crop)}
-                className={`w-full p-4 rounded-2xl flex items-center justify-between text-left transition-all duration-200 ${
-                  selectedCrop.id === crop.id
-                    ? 'bg-white text-[#285C32] shadow-md border-2 border-[#3F7D3A]'
-                    : 'bg-white/60 text-[#667267] hover:bg-white border border-stone-200'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{crop.image}</span>
-                  <div>
-                    <div className="font-bold text-base text-[#285C32]">{crop.name}</div>
-                    <div className="text-xs text-[#667267]">Kharif / Rabi Model</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-block px-3 py-1 bg-[#EEF5E8] text-[#3F7D3A] font-extrabold text-xs rounded-full border border-[#DCECCF]">
-                    {crop.score}% Match
+            {/* Recommendation Card */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#D8B45A] block">
+                    TOP AGRONOMIC MATCH
+                  </span>
+                  <h3 className="text-2xl font-black text-[#17201A]">
+                    {currentCrop.name}
+                  </h3>
+                  <span className="text-xs text-[#5F6F62] font-semibold">
+                    {currentCrop.soilSuit}
                   </span>
                 </div>
-              </button>
-            ))}
+                <div className="w-14 h-14 rounded-2xl bg-[#EEF5E8] flex flex-col items-center justify-center border border-[#3F7D3A]/20">
+                  <span className="text-lg font-black text-[#173F2A] leading-none">
+                    {currentCrop.score}%
+                  </span>
+                  <span className="text-[9px] font-bold text-[#3F7D3A] uppercase">Match</span>
+                </div>
+              </div>
+
+              {/* Reasons */}
+              <div className="space-y-2 pt-2 border-t border-stone-100">
+                <span className="text-xs font-bold text-[#17201A] block">
+                  Why this crop matches your farm:
+                </span>
+                {currentCrop.reasons.map((r, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-xs text-[#5F6F62]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#3F7D3A] shrink-0 mt-0.5" />
+                    <span>{r}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Caution & Extension Note */}
+              <div className="p-3.5 rounded-2xl bg-[#FAF7EE] border border-[#D8B45A]/30 text-xs text-[#17201A] space-y-1">
+                <strong>Agronomic Consideration:</strong>
+                <p className="text-[#5F6F62] text-[11px]">{currentCrop.cautions}</p>
+              </div>
+            </div>
           </div>
 
-          {/* Detailed Recommendation Card */}
-          <motion.div
-            key={selectedCrop.id}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="lg:col-span-8 bg-white rounded-3xl p-8 shadow-sm border border-[#3F7D3A]/20 relative overflow-hidden"
-          >
-            {/* Header Badge */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-stone-200">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#3F7D3A]">
-                  Recommended Crop
-                </span>
-                <h3 className="text-3xl font-black text-[#285C32] mt-1">
-                  {DEMO_CROP_RECOMMENDATION.cropName}
-                </h3>
-                <p className="text-xs text-[#667267] italic font-mono mt-0.5">
-                  {DEMO_CROP_RECOMMENDATION.scientificName}
-                </p>
-              </div>
-
-              <div className="bg-[#3F7D3A] text-white px-5 py-3 rounded-2xl text-center shadow-sm">
-                <span className="block text-2xl font-black">{selectedCrop.score}%</span>
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#DCECCF]">Suitability</span>
-              </div>
+          {/* RIGHT: Editorial Text & Action (5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FAF7EE] text-[#173F2A] text-xs font-bold uppercase tracking-wider border border-[#D8B45A]/30">
+              <Sprout className="w-3.5 h-3.5 text-[#D8B45A]" />
+              <span>{t('crop.eyebrow', 'CROP RECOMMENDATION ENGINE')}</span>
             </div>
 
-            {/* Matching Factors Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
-              {DEMO_CROP_RECOMMENDATION.factors.map((factor, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-[#EEF5E8] border border-[#DCECCF]">
-                  <div className="text-xs text-[#3F7D3A] font-semibold mb-1">{factor.label}</div>
-                  <div className="text-sm font-bold text-[#285C32] mb-1">{factor.value}</div>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#285C32]">
-                    <Check className="w-3 h-3 text-[#3F7D3A]" /> Match: {factor.match}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#173F2A] tracking-tight leading-tight">
+              {t('crop.heading', 'Right crop. Right season. Better decisions.')}
+            </h2>
 
-            {/* Architecture code notice */}
-            <div className="pt-4 border-t border-stone-200 flex items-center justify-between text-xs text-[#667267]">
+            <p className="text-sm sm:text-base text-[#5F6F62] leading-relaxed font-medium">
+              {t(
+                'crop.subheading',
+                'Stop guessing what to sow. Annadata factors in your soil test parameters, seasonal rainfall patterns, irrigation availability, and previous crop rotation to rank the most suitable crops.'
+              )}
+            </p>
+
+            <div className="space-y-2 text-xs text-[#5F6F62]">
               <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-[#3F7D3A]" />
-                <span>Frontend prototype — connects to future backend endpoint <code className="bg-[#EEF5E8] px-1.5 py-0.5 rounded text-[#285C32] font-semibold">/api/crops</code></span>
+                <Calendar className="w-4 h-4 text-[#3F7D3A]" />
+                <span>Kharif, Rabi, and Zaid planning</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Droplets className="w-4 h-4 text-[#3F7D3A]" />
+                <span>Irrigation capacity matching (Rain-fed, Canal, Borewell, Drip)</span>
               </div>
             </div>
-          </motion.div>
+
+            <div className="pt-2">
+              <Link href="/app/crop-recommendation">
+                <Button variant="primary" size="lg" icon={<ArrowRight className="w-4 h-4" />}>
+                  {t('crop.findSuitable', 'Find Suitable Crops')}
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>

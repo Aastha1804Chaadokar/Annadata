@@ -11,6 +11,12 @@ export const DEFAULT_FARMER_PROFILE: FarmerProfile = {
   language: 'Hindi (हिन्दी)',
   farmingType: 'Small farmer',
   mainCrop: 'Soybean (सोयाबीन)',
+  currentCrop: {
+    cropId: 'soybean',
+    cropName: 'Soybean',
+    cropNameHi: 'सोयाबीन',
+    category: 'PULSES',
+  },
   landSize: '3.5',
   landUnit: 'Acres',
   irrigation: 'Rain-fed',

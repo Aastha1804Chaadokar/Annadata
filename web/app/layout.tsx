@@ -3,6 +3,8 @@ import './globals.css';
 import { Navbar } from '@/components/navbar/Navbar';
 import { Footer } from '@/components/footer/Footer';
 
+import { I18nProvider } from '@/components/i18n/I18nProvider';
+
 export const metadata = {
   title: 'Annadata (अन्नदाता) — Har Kisan, Har Fasal, Har Faisla.',
   description:
@@ -33,9 +35,11 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased flex flex-col min-h-screen bg-[#F8FAF3]">
-        <Navbar />
-        <div className="flex-1">{children}</div>
-        <Footer />
+        <I18nProvider>
+          <Navbar />
+          <div className="flex-1">{children}</div>
+          <Footer />
+        </I18nProvider>
       </body>
     </html>
   );

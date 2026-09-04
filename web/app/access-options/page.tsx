@@ -74,7 +74,7 @@ export default function AccessOptionsPage() {
             </div>
             <div className="lg:col-span-6 p-6 rounded-2xl bg-[#FFF8E8] border border-[#E8B94A]/30 text-xs text-[#667267] space-y-2">
               <div className="font-bold text-sm text-[#285C32]">Toll-Free Phone Concept:</div>
-              <p>1. Dial 1800-XXX-XXXX $\rightarrow$ 2. Press 1 for Hindi $\rightarrow$ 3. Speak farming query $\rightarrow$ 4. Receive automated audio answer.</p>
+              <p>1. Dial 1800-XXX-XXXX → 2. Press 1 for Hindi → 3. Speak farming query → 4. Receive automated audio answer.</p>
               <div className="text-[10px] text-[#9A7048] font-bold border-t border-amber-200/60 pt-2">
                 * Future IVR voice service concept.
               </div>

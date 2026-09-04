@@ -1,5 +1,8 @@
-import type { Metadata } from 'next';
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { PageHero } from '@/components/ui/PageHero';
 import { Button } from '@/components/ui/Button';
 import { DEMO_SOIL_CARD, DEMO_CROP_RECOMMENDATION, DEMO_WEATHER_ADVISORY, DEMO_VOICE_CHAT } from '@/lib/constants';
@@ -13,22 +16,17 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
-  Code2,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'How Annadata Works | Soil, Crop, Weather & AI',
-  description:
-    'Discover how Annadata guides Indian farmers from soil analysis and crop recommendations to weather alerts and multilingual voice advisory.',
-};
-
 export default function HowItWorksPage() {
+  const { t } = useTranslation();
+
   const STEPS = [
     {
       num: 'STEP 01',
-      title: 'Know Your Farm',
-      badge: 'Profile Setup',
-      desc: 'Farmers specify location, crop history, soil type, season, and available irrigation (rainfed or pump-assisted).',
+      title: t('how.s1Title', 'Know Your Farm'),
+      badge: t('how.s1Badge', 'Profile Setup'),
+      desc: t('how.s1Desc', 'Farmers specify location, crop history, soil type, season, and available irrigation (rainfed or pump-assisted).'),
       icon: <MapPin className="w-6 h-6 text-[#3F7D3A]" />,
       content: (
         <div className="p-4 rounded-xl bg-[#EEF5E8] border border-[#DCECCF] text-xs text-[#285C32] space-y-2">
@@ -44,9 +42,9 @@ export default function HowItWorksPage() {
     },
     {
       num: 'STEP 02',
-      title: 'Understand Your Soil',
-      badge: 'Soil Intelligence',
-      desc: 'Annadata parses key parameters from official Soil Health Cards — Nitrogen, Phosphorus, Potassium, Soil pH, and Organic Carbon.',
+      title: t('how.s2Title', 'Understand Your Soil'),
+      badge: t('soil.moduleName', 'Soil Intelligence'),
+      desc: t('how.s2Desc', 'Annadata parses key parameters from official Soil Health Cards — Nitrogen, Phosphorus, Potassium, Soil pH, and Organic Carbon.'),
       icon: <FileText className="w-6 h-6 text-[#9A7048]" />,
       content: (
         <div className="space-y-3">
@@ -62,8 +60,8 @@ export default function HowItWorksPage() {
           <div className="p-3 rounded-lg bg-[#FFF8E8] border border-[#E8B94A]/40 text-[11px] text-[#667267] flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-[#E8B94A] shrink-0 mt-0.5" />
             <div>
-              <strong className="text-[#285C32] block font-bold">Laboratory Test Notice:</strong>
-              Normal photographs cannot replace laboratory Soil Health Card tests. Photo estimations must always be verified against certified lab analysis.
+              <strong className="text-[#285C32] block font-bold">{t('soil.accuracyNoticeTitle', 'Laboratory Test Notice')}:</strong>
+              {t('soil.accuracyNoticeDesc', 'Normal photographs cannot replace laboratory Soil Health Card tests.')}
             </div>
           </div>
         </div>
@@ -71,9 +69,9 @@ export default function HowItWorksPage() {
     },
     {
       num: 'STEP 03',
-      title: 'Choose Your Crop',
-      badge: 'Suitability Engine',
-      desc: 'Matches soil profile, rainfall forecast, season, and Mandi price trends to recommend suitable crops.',
+      title: t('how.s3Title', 'Choose Your Crop'),
+      badge: t('how.s3Badge', 'Suitability Engine'),
+      desc: t('how.s3Desc', 'Matches soil profile, rainfall forecast, season, and Mandi price trends to recommend suitable crops.'),
       icon: <Sprout className="w-6 h-6 text-[#3F7D3A]" />,
       content: (
         <div className="p-4 rounded-xl bg-white border border-[#3F7D3A]/20 shadow-sm flex items-center justify-between text-xs">
@@ -90,9 +88,9 @@ export default function HowItWorksPage() {
     },
     {
       num: 'STEP 04',
-      title: 'Understand Weather',
-      badge: 'Micro-Climate Alerts',
-      desc: 'Timely alerts instruct farmers when to sow, irrigate, spray pesticides, or harvest before heavy rain.',
+      title: t('how.s4Title', 'Understand Weather'),
+      badge: t('how.s4Badge', 'Micro-Climate Alerts'),
+      desc: t('how.s4Desc', 'Timely alerts instruct farmers when to sow, irrigate, spray pesticides, or harvest before heavy rain.'),
       icon: <CloudRain className="w-6 h-6 text-[#6FA8B8]" />,
       content: (
         <div className="p-4 rounded-xl bg-[#EAF5F5] border border-[#7BAFC1]/30 text-xs text-[#285C32] space-y-1">
@@ -105,9 +103,9 @@ export default function HowItWorksPage() {
     },
     {
       num: 'STEP 05',
-      title: 'Monitor Crop Health (Future Vision)',
-      badge: 'Leaf Image Scan',
-      desc: 'Farmers upload leaf or stem photos. AI identifies visible symptom patterns, possible nutrient deficiencies, and suggested next steps.',
+      title: t('how.s5Title', 'Monitor Crop Health (Future Vision)'),
+      badge: t('how.s5Badge', 'Leaf Image Scan'),
+      desc: t('how.s5Desc', 'Farmers upload leaf or stem photos. AI identifies visible symptom patterns, possible nutrient deficiencies, and suggested next steps.'),
       icon: <Camera className="w-6 h-6 text-[#3F7D3A]" />,
       content: (
         <div className="p-4 rounded-xl bg-white border border-stone-200 text-xs space-y-2">
@@ -116,17 +114,14 @@ export default function HowItWorksPage() {
             <span className="text-[10px] bg-[#EEF5E8] text-[#3F7D3A] px-2 py-0.5 rounded font-bold">Symptom Match</span>
           </div>
           <p className="text-[#667267]">Possible Nitrogen deficiency. Verify soil test card before applying urea.</p>
-          <div className="text-[10px] text-[#9A7048] italic border-t border-stone-100 pt-1">
-            * Non-diagnostic advisory tool.
-          </div>
         </div>
       ),
     },
     {
       num: 'STEP 06',
-      title: 'Ask Annadata Voice AI',
-      badge: 'Multilingual Assistant',
-      desc: 'Farmers ask questions using text or voice in Hindi, Marathi, Gujarati, and other regional dialects.',
+      title: t('how.s6Title', 'Ask Annadata Voice AI'),
+      badge: t('how.s6Badge', 'Multilingual Assistant'),
+      desc: t('how.s6Desc', 'Farmers ask questions using text or voice in Hindi, Marathi, Gujarati, and other regional dialects.'),
       icon: <Mic className="w-6 h-6 text-[#E8B94A]" />,
       content: (
         <div className="p-4 rounded-xl bg-[#F8FAF3] border border-[#DCECCF] text-xs space-y-2">
@@ -139,9 +134,9 @@ export default function HowItWorksPage() {
     },
     {
       num: 'STEP 07',
-      title: 'Take Action & Harvest',
-      badge: 'Empowered Decisions',
-      desc: 'A continuous cycle: Understand $\\rightarrow$ Decide $\\rightarrow$ Act $\\rightarrow$ Monitor.',
+      title: t('how.s7Title', 'Take Action & Harvest'),
+      badge: t('how.s7Badge', 'Empowered Decisions'),
+      desc: t('how.s7Desc', 'A continuous cycle: Understand -> Decide -> Act -> Monitor.'),
       icon: <CheckCircle2 className="w-6 h-6 text-[#3F7D3A]" />,
       content: (
         <div className="flex items-center justify-between text-xs font-bold text-[#285C32] bg-[#EEF5E8] p-3 rounded-xl border border-[#DCECCF]">
@@ -160,16 +155,16 @@ export default function HowItWorksPage() {
   return (
     <main className="min-h-screen bg-[#F8FAF3]">
       <PageHero
-        badge="How Annadata Works"
-        title="From understanding your farm to making better decisions."
-        subtitle="A step-by-step agricultural journey combining soil science, micro-climate weather, crop suitability models, and multilingual AI advisory."
+        badge={t('how.heroBadge', 'How Annadata Works')}
+        title={t('how.heroTitle', 'From understanding your farm to making better decisions.')}
+        subtitle={t('how.heroSub', 'A step-by-step agricultural journey combining soil science, micro-climate weather, crop suitability models, and multilingual AI advisory.')}
         icon={<Sprout className="w-4 h-4 text-[#3F7D3A]" />}
       />
 
       {/* Detailed Step-by-Step Timeline */}
       <section className="py-20 bg-[#F8FAF3]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {STEPS.map((step, idx) => (
+          {STEPS.map((step) => (
             <div
               key={step.num}
               className="p-8 rounded-3xl bg-white border border-[#3F7D3A]/12 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-8 items-center hover:border-[#3F7D3A]/30 transition-all duration-200"
@@ -198,11 +193,11 @@ export default function HowItWorksPage() {
       {/* CTA Banner */}
       <section className="py-16 bg-[#EEF5E8] border-t border-[#DCECCF]">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-4">
-          <h2 className="text-3xl font-black text-[#285C32]">Explore Annadata Features</h2>
-          <p className="text-sm text-[#667267]">Check out our comprehensive 8-feature platform breakdown.</p>
+          <h2 className="text-3xl font-black text-[#285C32]">{t('how.ctaTitle', 'Explore Annadata Features')}</h2>
+          <p className="text-sm text-[#667267]">{t('how.ctaSub', 'Check out our comprehensive 8-feature platform breakdown.')}</p>
           <Link href="/features">
             <Button variant="primary" size="md" icon={<ArrowRight className="w-4 h-4" />}>
-              View Platform Features
+              {t('how.ctaBtn', 'View Platform Features')}
             </Button>
           </Link>
         </div>

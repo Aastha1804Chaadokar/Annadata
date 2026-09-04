@@ -8,27 +8,33 @@ module.exports = {
     extend: {
       colors: {
         annadata: {
-          bg: '#F8FAF3', // Soft natural off-white
-          leaf: '#EEF5E8', // Very light leaf green
-          cream: '#FFF8E8', // Soft warm cream
-          skybg: '#EAF5F5', // Soft weather/sky light blue
-          aibg: '#F3F7ED', // Organic light green
-          green: '#3F7D3A', // Natural agricultural green
-          darkgreen: '#285C32', // Dark green for headings & wordmark
-          lightgreen: '#DCECCF', // Soft highlights
-          earth: '#9A7048', // Soil earth brown
-          yellow: '#E8B94A', // Warm sunlight yellow
-          sky: '#DCEFF5', // Soft sky
-          skyblue: '#6FA8B8', // Weather blue
-          rainblue: '#7BAFC1', // Rain indicator blue
-          text: '#243126', // Main body text
-          muted: '#667267', // Secondary text
+          primary: '#173F2A', // Deep forest green
+          secondary: '#3F7D3A', // Natural leaf green
+          accent: '#D8B45A', // Warm wheat / harvest gold
+          bg: '#F7F6F0', // Warm off-white canvas
+          card: '#FFFFFF', // Crisp card surface
+          text: '#17201A', // Deep charcoal
+          muted: '#5F6F62', // Natural gray-green
+          leaf: '#EEF5E8', // Soft leaf highlight
+          cream: '#FAF7EE', // Soft wheat cream
+          border: 'rgba(23, 63, 42, 0.12)',
+          darkgreen: '#173F2A',
+          green: '#3F7D3A',
+          yellow: '#D8B45A',
+          earth: '#8C6239',
+          sky: '#EBF4F6',
         },
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['var(--font-sans)', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.5rem',
+        '4xl': '2rem',
       },
     },
   },
   plugins: [],
 };
+

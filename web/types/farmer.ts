@@ -1,3 +1,5 @@
+import { StructuredFarmLocation } from './location';
+
 export type FarmingType = 'Small farmer' | 'Medium farmer' | 'Large farmer' | 'Other';
 
 export type IrrigationType = 'Rain-fed' | 'Borewell' | 'Canal' | 'Drip' | 'Other';
@@ -22,6 +24,14 @@ export interface GeocodedLocation {
   country?: string;
 }
 
+export interface CurrentCropData {
+  cropId: string;
+  cropName: string;
+  cropNameHi: string;
+  category: string;
+  customCropName?: string;
+}
+
 export interface FarmerProfile {
   name: string;
   mobile: string;
@@ -31,6 +41,7 @@ export interface FarmerProfile {
   language: string;
   farmingType: FarmingType;
   mainCrop: string;
+  currentCrop?: CurrentCropData;
   landSize: string;
   landUnit: 'Acres' | 'Bigha' | 'Hectares';
   irrigation: IrrigationType;
@@ -49,6 +60,7 @@ export interface FarmerProfile {
   taluka?: string;
   subDistrict?: string;
   country?: string;
+  structuredLocation?: StructuredFarmLocation;
 }
 
 export interface SoilParameters {

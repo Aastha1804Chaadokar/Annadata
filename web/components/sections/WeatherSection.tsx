@@ -1,112 +1,114 @@
 'use client';
 
 import React from 'react';
-import { SectionHeading } from '@/components/ui/SectionHeading';
-import { DEMO_WEATHER_ADVISORY } from '@/lib/constants';
-import { motion } from 'framer-motion';
-import { CloudRain, Thermometer, Droplets, AlertTriangle, CloudSun } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/Button';
+import { CloudSun, CloudRain, Thermometer, Wind, Droplets, ArrowRight, AlertTriangle } from 'lucide-react';
 
 export const WeatherSection: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
-    <section className="py-24 bg-[#EAF5F5] relative overflow-hidden">
-      {/* Decorative Moving Soft Cloud */}
-      <motion.div
-        animate={{ x: [-100, 100, -100] }}
-        transition={{ repeat: Infinity, duration: 25, ease: 'linear' }}
-        className="absolute top-12 left-0 opacity-15 pointer-events-none"
-      >
-        <CloudSun className="w-96 h-96 text-[#6FA8B8]" />
-      </motion.div>
+    <section id="weather" className="py-24 bg-white border-y border-[#173F2A]/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          {/* LEFT: Section Description (5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EEF5E8] text-[#173F2A] text-xs font-bold uppercase tracking-wider">
+              <CloudSun className="w-3.5 h-3.5 text-[#3F7D3A]" />
+              <span>{t('weather.eyebrow', 'MICRO-CLIMATE TELEMETRY')}</span>
+            </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <SectionHeading
-          badge="Localized Weather Guidance"
-          title="Let weather guide your decisions."
-          subtitle="Timely agricultural advice tied directly to local micro-climate forecasts. Avoid wasted fertilizer and protect crops before heavy rainfall."
-        />
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#173F2A] tracking-tight leading-tight">
+              {t('weather.heading', 'Let weather guide your daily farm decisions.')}
+            </h2>
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Weather Visual Widget Card */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="lg:col-span-6 bg-white rounded-3xl p-8 border border-[#6FA8B8]/30 shadow-sm space-y-6"
-          >
-            <div className="flex items-center justify-between">
+            <p className="text-sm sm:text-base text-[#5F6F62] leading-relaxed font-medium">
+              {t(
+                'weather.subheading',
+                'Avoid wasted chemical sprays and prevent over-irrigation. Annadata connects directly to Open-Meteo telemetry based on your farm coordinates to deliver practical field advisories.'
+              )}
+            </p>
+
+            <div className="space-y-2.5">
+              <div className="p-3 bg-[#F7F6F0] rounded-2xl border border-[#173F2A]/10 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-[#3F7D3A] shadow-xs">
+                  <Droplets className="w-4 h-4" />
+                </div>
+                <div className="text-xs">
+                  <strong className="text-[#17201A] block">Irrigation Advisory</strong>
+                  <span className="text-[#5F6F62]">Hold water if rain &gt;60% expected in next 48 hours.</span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-[#F7F6F0] rounded-2xl border border-[#173F2A]/10 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-[#D8B45A] shadow-xs">
+                  <Wind className="w-4 h-4" />
+                </div>
+                <div className="text-xs">
+                  <strong className="text-[#17201A] block">Foliar Spray Advisory</strong>
+                  <span className="text-[#5F6F62]">Avoid pesticide spray when wind speed exceeds 18 km/h.</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Link href="/app/weather">
+                <Button variant="primary" size="lg" icon={<ArrowRight className="w-4 h-4" />}>
+                  {t('weather.checkForecast', 'Check Farm Weather')}
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT: Live Weather Card Preview (7 cols) */}
+          <div className="lg:col-span-7 bg-[#F7F6F0] rounded-3xl p-6 sm:p-8 border border-[#173F2A]/10 shadow-sm space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-[#173F2A]/10">
               <div>
-                <span className="text-xs font-bold text-[#6FA8B8] uppercase tracking-wider">
-                  {DEMO_WEATHER_ADVISORY.location}
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#5F6F62] block">
+                  LIVE TELEMETRY PREVIEW
                 </span>
-                <h3 className="text-2xl font-bold text-[#285C32] mt-1">Live Advisory Card</h3>
+                <h3 className="text-xl font-bold text-[#17201A]">
+                  Indore District Farmland
+                </h3>
               </div>
-              <CloudRain className="w-12 h-12 text-[#7BAFC1] animate-bounce" />
+              <span className="px-3 py-1 rounded-full bg-white text-[#173F2A] font-bold text-xs border border-[#173F2A]/10">
+                Open-Meteo GPS
+              </span>
             </div>
 
-            {/* Metrics */}
-            <div className="grid grid-cols-3 gap-4 pt-2">
-              <div className="p-4 rounded-2xl bg-[#EAF5F5] border border-[#7BAFC1]/30 text-center">
-                <CloudRain className="w-5 h-5 text-[#7BAFC1] mx-auto mb-1" />
-                <span className="text-xs text-[#667267]">Rainfall Prob.</span>
-                <span className="block text-2xl font-black text-[#285C32] mt-1">
-                  {DEMO_WEATHER_ADVISORY.rainProbability}%
-                </span>
+            {/* Weather Metrics */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-4 bg-white rounded-2xl border border-stone-200/80 text-center shadow-xs">
+                <Thermometer className="w-5 h-5 text-[#D8B45A] mx-auto mb-1" />
+                <span className="text-[11px] text-[#5F6F62] block">Temperature</span>
+                <strong className="text-xl sm:text-2xl font-black text-[#17201A]">28.4°C</strong>
               </div>
-
-              <div className="p-4 rounded-2xl bg-[#FFF8E8] border border-[#E8B94A]/30 text-center">
-                <Thermometer className="w-5 h-5 text-[#E8B94A] mx-auto mb-1" />
-                <span className="text-xs text-[#667267]">Temperature</span>
-                <span className="block text-2xl font-black text-[#285C32] mt-1">
-                  {DEMO_WEATHER_ADVISORY.temperature}°C
-                </span>
+              <div className="p-4 bg-white rounded-2xl border border-stone-200/80 text-center shadow-xs">
+                <CloudRain className="w-5 h-5 text-[#3F7D3A] mx-auto mb-1" />
+                <span className="text-[11px] text-[#5F6F62] block">Rain Probability</span>
+                <strong className="text-xl sm:text-2xl font-black text-[#17201A]">15%</strong>
               </div>
-
-              <div className="p-4 rounded-2xl bg-[#EEF5E8] border border-[#3F7D3A]/30 text-center">
-                <Droplets className="w-5 h-5 text-[#3F7D3A] mx-auto mb-1" />
-                <span className="text-xs text-[#667267]">Humidity</span>
-                <span className="block text-2xl font-black text-[#285C32] mt-1">
-                  {DEMO_WEATHER_ADVISORY.humidity}%
-                </span>
+              <div className="p-4 bg-white rounded-2xl border border-stone-200/80 text-center shadow-xs">
+                <Wind className="w-5 h-5 text-[#3F7D3A] mx-auto mb-1" />
+                <span className="text-[11px] text-[#5F6F62] block">Wind Speed</span>
+                <strong className="text-xl sm:text-2xl font-black text-[#17201A]">11 km/h</strong>
               </div>
             </div>
 
-            {/* Practical Actionable Advice */}
-            <div className="p-5 rounded-2xl bg-[#FFF8E8] border border-[#E8B94A]/40 space-y-2">
-              <div className="flex items-center gap-2 text-[#285C32] font-bold text-sm">
-                <AlertTriangle className="w-4 h-4 text-[#E8B94A]" />
-                <span>Actionable Advisory:</span>
+            {/* Actionable Field Alert */}
+            <div className="p-4 rounded-2xl bg-[#FAF7EE] border border-[#D8B45A]/40 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-[#D8B45A] shrink-0 mt-0.5" />
+              <div className="text-xs space-y-0.5">
+                <strong className="text-[#17201A]">Foliar Spraying Condition: Good</strong>
+                <p className="text-[#5F6F62]">
+                  Low wind speed and clear skies expected today. Favorable window for bio-fertilizer and foliar nutrient application.
+                </p>
               </div>
-              <p className="text-sm text-[#667267] leading-relaxed">
-                "{DEMO_WEATHER_ADVISORY.advisoryText}"
-              </p>
             </div>
-          </motion.div>
-
-          {/* Right Column: Advisory Impact */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-6 space-y-6 text-[#243126]"
-          >
-            <div className="p-6 rounded-2xl bg-white border border-[#6FA8B8]/20 shadow-sm">
-              <h4 className="text-lg font-bold text-[#285C32] mb-2">Irrigation Efficiency</h4>
-              <p className="text-sm text-[#667267] leading-relaxed">
-                Save diesel and electrical pump costs by aligning irrigation schedules with natural rainfall forecasts.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-white border border-[#6FA8B8]/20 shadow-sm">
-              <h4 className="text-lg font-bold text-[#285C32] mb-2">Pesticide & Spray Timing</h4>
-              <p className="text-sm text-[#667267] leading-relaxed">
-                Prevent chemical runoff by avoiding pesticide applications prior to predicted high-probability rain windows.
-              </p>
-            </div>
-
-            <div className="text-xs text-[#667267] italic">
-              * Demonstration weather telemetry. Connects to future Annadata weather integration service at <code className="bg-white px-2 py-0.5 rounded text-[#285C32] border border-[#6FA8B8]/20 font-semibold">/api/weather</code>.
-            </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

@@ -166,40 +166,37 @@ export default function DownloadPage() {
           {/* OPTION 3: Expo Go / Developer Scan */}
           <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-md hover:shadow-xl transition-all flex flex-col justify-between">
             <div>
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-700 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-700 mb-4">
                 <QrCode className="w-7 h-7" />
               </div>
-              <h2 className="text-2xl font-black text-[#173F2A] mb-2">Expo Go Preview</h2>
-              <p className="text-sm font-semibold text-gray-500 mb-6">
-                Preview the native React Native build in real-time using Expo Go on Android or iOS.
+              <h2 className="text-2xl font-black text-[#173F2A] mb-1">Expo Go Live Scan</h2>
+              <p className="text-xs font-semibold text-gray-500 mb-4">
+                Scan with Expo Go on Android or iOS Camera to launch instantly:
               </p>
               
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Direct hardware sensor access</span>
-                </li>
-                <li className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Native GPS plot surveyor</span>
-                </li>
-                <li className="flex items-center gap-2.5 text-sm font-semibold text-gray-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Real-time voice synthesis</span>
-                </li>
-              </ul>
+              {/* QR CODE CONTAINER */}
+              <div className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-2xl border border-gray-200 mb-4">
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=exp://192.168.1.241:8081"
+                  alt="Annadata Expo Go QR Code"
+                  className="w-40 h-40 rounded-xl shadow-sm border border-white"
+                />
+                <span className="text-[11px] font-mono font-bold text-gray-700 mt-2 bg-white px-2 py-1 rounded border border-gray-200">
+                  exp://192.168.1.241:8081
+                </span>
+              </div>
             </div>
 
             <div>
-              <Link
-                href="/app"
-                className="w-full inline-flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-base shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+              <a
+                href="exp://192.168.1.241:8081"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                <ArrowRight className="w-5 h-5" />
-                Launch Live Portal
-              </Link>
-              <span className="block text-center text-xs font-semibold text-gray-600 mt-2">
-                Terminal command: <code className="text-emerald-800 font-mono">npx expo start</code>
+                <Smartphone className="w-4 h-4" />
+                Open Expo Go Directly
+              </a>
+              <span className="block text-center text-[11px] font-semibold text-gray-500 mt-2">
+                Make sure your phone is connected to the same Wi-Fi
               </span>
             </div>
           </div>

@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#1B4332" />
@@ -39,7 +39,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased flex flex-col min-h-screen bg-[#F8FAF3]">
+      <body className="antialiased flex flex-col min-h-screen bg-[#F8FAF3]" suppressHydrationWarning>
         <I18nProvider>
           <Navbar />
           <div className="flex-1">{children}</div>

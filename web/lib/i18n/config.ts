@@ -34,13 +34,7 @@ const resources = {
 };
 
 const getInitialLanguage = (): string => {
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && ['en', 'hi', 'mr', 'ta', 'te', 'kn', 'bn'].includes(saved)) {
-      return saved;
-    }
-  }
-  return 'hi'; // Default to Hindi for India-focused farming platform
+  return 'hi'; // Consistent initial language across SSR and initial client hydration
 };
 
 if (!i18n.isInitialized) {

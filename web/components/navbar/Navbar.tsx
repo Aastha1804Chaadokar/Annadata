@@ -106,13 +106,14 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  suppressHydrationWarning
                   className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all focus:outline-none ${
                     isActive
                       ? 'bg-[#D8B45A] text-[#173F2A] font-extrabold shadow-sm'
                       : 'text-white/85 hover:text-white hover:bg-white/15'
                   }`}
                 >
-                  {item.name}
+                  <span suppressHydrationWarning>{item.name}</span>
                 </Link>
               );
             })}
@@ -124,14 +125,15 @@ export const Navbar: React.FC = () => {
 
             <Link
               href="/login"
+              suppressHydrationWarning
               className="text-xs font-bold text-white/90 hover:text-[#D8B45A] px-3.5 py-2 rounded-full transition-colors"
             >
-              {t('navbar.login', 'Login')}
+              <span suppressHydrationWarning>{t('navbar.login', 'Login')}</span>
             </Link>
 
             <Link href="/app" tabIndex={-1}>
-              <Button variant="accent" size="sm" className="font-extrabold shadow-md">
-                {t('navbar.getStarted', 'Get Started')}
+              <Button variant="accent" size="sm" className="font-extrabold shadow-md" suppressHydrationWarning>
+                <span suppressHydrationWarning>{t('navbar.getStarted', 'Get Started')}</span>
               </Button>
             </Link>
           </div>
@@ -163,6 +165,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  suppressHydrationWarning
                   onClick={() => setMobileMenuOpen(false)}
                   className={`text-sm font-bold px-4 py-2.5 rounded-2xl transition-all ${
                     isActive
@@ -170,7 +173,7 @@ export const Navbar: React.FC = () => {
                       : 'text-white/90 hover:bg-white/10'
                   }`}
                 >
-                  {item.name}
+                  <span suppressHydrationWarning>{item.name}</span>
                 </Link>
               );
             })}
@@ -179,14 +182,15 @@ export const Navbar: React.FC = () => {
           <div className="pt-3 border-t border-white/10 flex flex-col gap-2.5">
             <Link
               href="/login"
+              suppressHydrationWarning
               onClick={() => setMobileMenuOpen(false)}
               className="w-full text-center py-2.5 text-sm font-bold text-white bg-white/10 rounded-full border border-white/20 hover:bg-white/20"
             >
-              {t('navbar.login', 'Login')}
+              <span suppressHydrationWarning>{t('navbar.login', 'Login')}</span>
             </Link>
             <Link href="/app" onClick={() => setMobileMenuOpen(false)} className="w-full">
-              <Button variant="accent" size="md" className="w-full font-bold">
-                {t('navbar.getStarted', 'Get Started')}
+              <Button variant="accent" size="md" className="w-full font-bold" suppressHydrationWarning>
+                <span suppressHydrationWarning>{t('navbar.getStarted', 'Get Started')}</span>
               </Button>
             </Link>
           </div>

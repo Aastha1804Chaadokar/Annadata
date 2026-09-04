@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Annadata Farmer Mobile Application built with React Native, Expo, and TypeScript.",
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",

@@ -91,7 +91,7 @@ export default function LoginPage() {
                   type="tel"
                   required
                   autoComplete="off"
-                  placeholder="e.g. 9876543210"
+                  placeholder="Enter 10-digit mobile number"
                   value={mobile}
                   maxLength={10}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
@@ -110,7 +110,7 @@ export default function LoginPage() {
                   type="password"
                   required
                   autoComplete="new-password"
-                  placeholder="e.g. ••••••••"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"

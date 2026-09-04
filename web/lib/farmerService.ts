@@ -3,8 +3,8 @@ import { FarmerProfile } from '@/types/farmer';
 const STORAGE_KEY = 'annadata_farmer_profile';
 
 export const DEFAULT_FARMER_PROFILE: FarmerProfile = {
-  name: 'Ram Singh',
-  mobile: '9876543210',
+  name: '',
+  mobile: '',
   state: 'Madhya Pradesh',
   district: 'Indore',
   village: 'Sanwer',

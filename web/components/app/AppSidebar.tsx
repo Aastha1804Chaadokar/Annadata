@@ -51,8 +51,8 @@ export const AppSidebar: React.FC = () => {
     { name: t('navbar.settings'), href: '/app/settings', icon: <Settings className="w-4 h-4" /> },
   ];
 
-  const displayName = authUser?.name || farmer?.name || 'Ram Singh';
-  const displayMobile = authUser?.mobile || farmer?.mobile || '9876543210';
+  const displayName = authUser?.name || farmer?.name || 'Kisan';
+  const displayMobile = authUser?.mobile || farmer?.mobile || '';
   const initials = displayName
     .split(' ')
     .map((n) => n[0])

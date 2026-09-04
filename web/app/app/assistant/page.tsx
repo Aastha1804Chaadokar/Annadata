@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { getFarmerProfile } from '@/lib/farmerService';
 import { getLatestSoilReport } from '@/lib/soilService';
@@ -13,6 +13,8 @@ import {
   getLangCode,
   LANGUAGE_SPEECH_MAP,
   SupportedLang,
+  resolveLanguage,
+  retranslateMessages,
 } from '@/lib/assistantService';
 import { FarmerProfile } from '@/types/farmer';
 import { SoilReportRecord } from '@/types/soil';
@@ -63,7 +65,7 @@ function AssistantContent() {
   const [inputText, setInputText] = useState<string>('');
   const [isTyping, setIsTyping] = useState<boolean>(false);
 
-  // ── Auto-Speak Preference (Persisted in localStorage) ─────────────────────
+  // ── Auto-Speak Preference ─────────────────────────────────────────────────
   const [autoSpeak, setAutoSpeak] = useState<boolean>(true);
 
   // ── Real Voice Recording State ────────────────────────────────────────────
@@ -76,7 +78,7 @@ function AssistantContent() {
   const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
   const [ttsDebug, setTtsDebug] = useState<string>('');
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const prevLangRef = useRef<string>(i18n.language);
+  const prevLangRef = useRef<string>(i18n.language || 'hi');
 
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
@@ -89,11 +91,16 @@ function AssistantContent() {
 
     getWeatherData(p).then((w) => setWeather(w));
 
+    const activeLang = resolveLanguage(i18n.language, p);
+
     const saved = getSavedChatHistory();
     if (saved.length > 0) {
-      setMessages(saved);
+      // Re-translate saved history if language differs
+      const translated = retranslateMessages(saved, p, s, null, activeLang);
+      setMessages(translated);
+      saveChatHistory(translated);
     } else {
-      const initialGreeting = generateAiResponse('hello', p, s, null, i18n.language);
+      const initialGreeting = generateAiResponse('hello', p, s, null, activeLang);
       setMessages([initialGreeting]);
       saveChatHistory([initialGreeting]);
     }
@@ -119,10 +126,10 @@ function AssistantContent() {
     };
   }, []);
 
-  // 2. Real-Time Language Change Reaction (Updates greetings, voices & speech models)
+  // 2. Real-Time Language Change Reaction (Re-translates conversation and changes voice locale)
   useEffect(() => {
     if (!profile) return;
-    const currentLang = i18n.language || 'en';
+    const currentLang = resolveLanguage(i18n.language, profile);
 
     // If language changed
     if (prevLangRef.current !== currentLang) {
@@ -135,34 +142,33 @@ function AssistantContent() {
       setSpeakingMsgId(null);
       utteranceRef.current = null;
 
-      // Check if chat only has the greeting message or if we should add a language switch greeting
+      // Re-translate all existing messages in the conversation to the new language
       setMessages((prev) => {
-        // If empty or only has 1 greeting, replace with new language greeting
-        if (prev.length <= 1 && (!prev[0] || prev[0].sender === 'assistant')) {
+        if (prev.length === 0) {
           const freshGreeting = generateAiResponse('hello', profile, soilReport, weather, currentLang);
           saveChatHistory([freshGreeting]);
           return [freshGreeting];
         }
 
-        // Add a localized status notification from the assistant
-        const langInfo = LANGUAGE_SPEECH_MAP[currentLang as SupportedLang] || LANGUAGE_SPEECH_MAP.hi;
-        const noticeMsg: ChatMessage = {
-          id: `notice_${Date.now()}`,
-          sender: 'assistant',
-          text: `🌐 **Language updated to ${langInfo.nativeName} (${langInfo.name}).** AI Voice & Speech Recognition are now active in **${langInfo.nativeName}** (${langInfo.bcp47}).`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          language: currentLang,
-          category: 'general',
-          suggestedFollowUps: generateAiResponse('hello', profile, soilReport, weather, currentLang).suggestedFollowUps,
-        };
-        const updated = [...prev, noticeMsg];
-        saveChatHistory(updated);
-        return updated;
+        const retranslated = retranslateMessages(prev, profile, soilReport, weather, currentLang);
+        saveChatHistory(retranslated);
+
+        // If auto-speak is enabled, speak the latest assistant response in the new language
+        if (autoSpeak) {
+          const lastAssistantMsg = [...retranslated].reverse().find((m) => m.sender === 'assistant');
+          if (lastAssistantMsg) {
+            setTimeout(() => {
+              handleToggleAudio(lastAssistantMsg.id, lastAssistantMsg.text, currentLang);
+            }, 150);
+          }
+        }
+
+        return retranslated;
       });
 
       setTtsDebug(`Language switched to ${currentLang} (${getLangCode(currentLang)})`);
     }
-  }, [i18n.language, profile, soilReport, weather]);
+  }, [i18n.language, profile, soilReport, weather, autoSpeak]);
 
   // Auto-scroll chat to bottom
   useEffect(() => {
@@ -282,7 +288,7 @@ function AssistantContent() {
     return text
       .replace(/[*_~`#]/g, '')
       .replace(/•/g, '')
-      .replace(/₹/g, 'Rupees ')
+      .replace(/₹/g, 'रुपये ')
       .replace(/\n+/g, '. ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -291,7 +297,8 @@ function AssistantContent() {
   const doSpeak = (msgId: string, cleanText: string, targetLang?: string) => {
     const synth = window.speechSynthesis;
     const allVoices = synth.getVoices();
-    const langCode = getLangCode(targetLang || i18n.language);
+    const resolvedCode = resolveLanguage(targetLang || i18n.language, profile);
+    const langCode = getLangCode(resolvedCode);
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utteranceRef.current = utterance; // Keep ref to prevent Chrome GC bug
@@ -348,7 +355,7 @@ function AssistantContent() {
     setSpeakingMsgId(null);
 
     const cleanText = cleanTextForSpeech(text);
-    const targetLang = msgLang || i18n.language;
+    const targetLang = msgLang || resolveLanguage(i18n.language, profile);
     const voices = window.speechSynthesis.getVoices();
 
     if (voices.length > 0) {
@@ -380,7 +387,7 @@ function AssistantContent() {
     const q = textToSend || inputText;
     if (!q.trim() || isTyping) return;
 
-    const currentLang = i18n.language || 'en';
+    const currentLang = resolveLanguage(i18n.language, profile, q);
 
     const userMsg: ChatMessage = {
       id: `user_${Date.now()}`,
@@ -409,13 +416,14 @@ function AssistantContent() {
           handleToggleAudio(aiReply.id, aiReply.text, currentLang);
         }, 100);
       }
-    }, 500);
+    }, 400);
   };
 
   const handleClearHistory = () => {
     clearChatHistory();
     stopSpeaking();
-    const initialGreeting = generateAiResponse('hello', profile, soilReport, weather, i18n.language);
+    const currentLang = resolveLanguage(i18n.language, profile);
+    const initialGreeting = generateAiResponse('hello', profile, soilReport, weather, currentLang);
     setMessages([initialGreeting]);
   };
 
@@ -426,9 +434,65 @@ function AssistantContent() {
     }
   };
 
+  const activeLang = resolveLanguage(i18n.language, profile);
+  const activeLangCode = getLangCode(activeLang);
+  const currentLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === activeLang) || SUPPORTED_LANGUAGES[1];
   const cropNameStr = profile.currentCrop ? formatCropDisplay(profile.currentCrop) : profile.mainCrop || 'Soybean';
-  const activeLangCode = getLangCode(i18n.language);
-  const currentLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === (i18n.language || 'en')) || SUPPORTED_LANGUAGES[0];
+
+  // Localized quick suggestion prompts for all 7 languages
+  const QUICK_PROMPTS: Record<SupportedLang, { label: string; query: string }[]> = {
+    hi: [
+      { label: `🌾 ${cropNameStr} खाद की सही खुराक`, query: `${cropNameStr} फसल में संतुलित खाद की कितनी मात्रा डालें?` },
+      { label: '💧 आज सिंचाई करें या नहीं?', query: 'मौसम और बारिश के अनुसार क्या आज सिंचाई करनी चाहिए?' },
+      { label: '🐛 पीली पत्तियां और कीटनाशक', query: 'फसल की पत्तियां पीली क्यों हो रही हैं और कौनसा स्प्रे करें?' },
+      { label: '🧪 मृदा स्वास्थ्य कार्ड रिपोर्ट', query: 'मेरी मृदा स्वास्थ्य कार्ड रिपोर्ट और pH का क्या मतलब है?' },
+      { label: '📈 ताजा मंडी भाव', query: 'नजदीकी मंडी में फसलों के ताजा भाव क्या हैं?' },
+    ],
+    mr: [
+      { label: `🌾 ${cropNameStr} खत व्यवस्थापन`, query: `${cropNameStr} पिकासाठी खतांची योग्य मात्रा किती असावी?` },
+      { label: '💧 पाणी द्यावे की नाही?', query: 'हवामानाचा अंदाज पाहून आज पिकाला पाणी द्यावे का?' },
+      { label: '🐛 पाने पिवळी पडणे व कीड', query: 'पाने पिवळी पडत असून कोणती फवारणी करावी?' },
+      { label: '🧪 माती परीक्षण अहवाल', query: 'माती परीक्षण अहवाल आणि सामू कसा तपासावा?' },
+      { label: '📈 बाजारभाव', query: 'बाजार समितीमध्ये चालू बाजारभाव काय आहेत?' },
+    ],
+    bn: [
+      { label: `🌾 ${cropNameStr} সারের মাত্রা`, query: `${cropNameStr} ফসলে কতটা সার প্রয়োগ করতে হবে?` },
+      { label: '💧 সেচ দেবেন কি না?', query: 'আবহাওয়া দেখে আজ সেচ দেওয়া যাবে কি?' },
+      { label: '🐛 হলুদ পাতা ও পোকা দমন', query: 'পাতা হলুদ হয়ে যাচ্ছে, কি কীটনাশক স্প্রে করব?' },
+      { label: '🧪 মাটির রিপোর্ট ও pH', query: 'মাটির স্বাস্থ্য রিপোর্ট কিভাবে বুঝব?' },
+      { label: '📈 বর্তমান বাজারদর', query: 'স্থানীয় মাণ্ডির বর্তমান ফসলের দর কি?' },
+    ],
+    ta: [
+      { label: `🌾 ${cropNameStr} உர பரிந்துரை`, query: `${cropNameStr} பயிருக்கு எவ்வளவு உரம் இட வேண்டும்?` },
+      { label: '💧 பாசனம் செய்யலாமா?', query: 'வானிலைக்கேற்ப இன்று பாசனம் செய்ய வேண்டுமா?' },
+      { label: '🐛 இலைகள் மஞ்சள் நிறமாதல்', query: 'இலைகள் மஞ்சள் நிறமாக மாறுவதற்கு என்ன மருந்து தெளிக்க வேண்டும்?' },
+      { label: '🧪 மண் வள அட்டை விவரம்', query: 'மண் பரிசோதனை அறிக்கையை எப்படி பார்ப்பது?' },
+      { label: '📈 சந்தை விலை நிலவரம்', query: 'தற்போதைய சந்தை விலை நிலவரம் என்ன?' },
+    ],
+    te: [
+      { label: `🌾 ${cropNameStr} ఎరువుల మోతాదు`, query: `${cropNameStr} పంటకు ఎంత ఎరువు వేయాలి?` },
+      { label: '💧 నీరు పెట్టవచ్చా?', query: 'వాతావరణం ప్రకారం ఈరోజు నీరు పెట్టవచ్చా?' },
+      { label: '🐛 ఆకులు పసుపు రంగు నివారణ', query: 'ఆకులు పసుపు రంగులోకి మారుతున్నాయి, ఏ మందు పిచికారీ చేయాలి?' },
+      { label: '🧪 భూసార పరీక్ష నివేదిక', query: 'నేల పరీక్ష నివేదికను ఎలా విశ్లేషించాలి?' },
+      { label: '📈 మార్కెట్ యార్డ్ ధరలు', query: 'మార్కెట్ యార్డులో తాజా పంట ధరలు ఏమిటి?' },
+    ],
+    kn: [
+      { label: `🌾 ${cropNameStr} ಗೊಬ್ಬರದ ಪ್ರಮಾಣ`, query: `${cropNameStr} ಬೆಳೆಗೆ ಎಷ್ಟು ಗೊಬ್ಬರ ಹಾಕಬೇಕು?` },
+      { label: '💧 ನೀರಾವರಿ ಮಾಡಬೇಕೆ?', query: 'ಹವಾಮಾನ ಮುನ್ಸೂಚನೆಯಂತೆ ಇಂದು ನೀರುಣಿಸಬೇಕೆ?' },
+      { label: '🐛 ಎಲೆಗಳು ಹಳದಿಯಾಗುವುದು', query: 'ಎಲೆಗಳು ಹಳದಿಯಾಗುತ್ತಿವೆ, ಯಾವ ಕೀಟನಾಶಕ ಸಿಂಪಡಿಸಬೇಕು?' },
+      { label: '🧪 ಮಣ್ಣು ಆರೋಗ್ಯ ವರದಿ', query: 'ಮಣ್ಣಿನ ಆರೋಗ್ಯ ಕಾರ್ಡ್ ವಿವರ ತಿಳಿಸಿ?' },
+      { label: '📈 ಮಾರುಕಟ್ಟೆ ದರಗಳು', query: 'ಎಪಿಎಂಸಿ ಮಾರುಕಟ್ಟೆಯಲ್ಲಿ ಇಂದಿನ ದರಗಳೇನು?' },
+    ],
+    en: [
+      { label: `🌾 ${cropNameStr} Fertilizer Dosage`, query: `How much fertilizer dosage is recommended for ${cropNameStr}?` },
+      { label: '💧 Sowing & Irrigation Advisory', query: 'Should I irrigate today based on the weather forecast?' },
+      { label: '🐛 Yellow Leaves & Pest Spray', query: 'Why are leaves turning yellow and what spray is recommended?' },
+      { label: '🧪 Soil Health Card & pH', query: 'How to interpret my Soil Health Report and pH?' },
+      { label: '📈 APMC Mandi Rates', query: 'What are current APMC mandi prices for major crops?' },
+    ],
+  };
+
+  const activePrompts = QUICK_PROMPTS[activeLang] || QUICK_PROMPTS.hi;
 
   return (
     <div className="min-h-screen bg-[#F8FAF3] flex flex-col">
@@ -454,7 +518,7 @@ function AssistantContent() {
                 </span>
               </div>
               <p className="text-xs text-[#5F6F62] mt-0.5">
-                {t('assistant.subtitle', 'Speak or type in any Indian language. The assistant responds with voice and text.')}
+                {t('assistant.subtitle', 'Speak or type in your native language. Annadata responds with speech and actionable agronomy guidance.')}
               </p>
             </div>
 
@@ -484,26 +548,26 @@ function AssistantContent() {
           <div className="p-3 bg-white rounded-2xl border border-[#173F2A]/10 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-[#173F2A] shrink-0">
               <Globe className="w-4 h-4 text-[#3F7D3A]" />
-              <span>{t('assistant.chooseLanguage', 'Choose Assistant Language / भाषा चुनें')}:</span>
+              <span>{t('assistant.chooseLanguage', 'Choose Language / भाषा चुनें')}:</span>
             </div>
 
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
               {SUPPORTED_LANGUAGES.map((lang) => {
-                const isActive = (i18n.language || 'en') === lang.code;
+                const isActive = activeLang === lang.code;
                 return (
                   <button
                     key={lang.code}
                     type="button"
                     onClick={() => handleSwitchLanguage(lang.code)}
-                    className={`px-2.5 py-1 rounded-xl text-xs font-bold shrink-0 transition-all flex items-center gap-1 border ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all flex items-center gap-1.5 border ${
                       isActive
-                        ? 'bg-[#3F7D3A] text-white border-[#3F7D3A] shadow-xs scale-105'
-                        : 'bg-[#F8FAF3] hover:bg-[#EEF5E8] text-[#173F2A] border-stone-200'
+                        ? 'bg-[#173F2A] text-white border-[#173F2A] shadow-xs scale-105'
+                        : 'bg-[#F8FAF3] hover:bg-[#EEF5E8] text-[#173F2A] border-stone-200 hover:border-[#3F7D3A]/40'
                     }`}
                   >
                     <span>{lang.flag}</span>
                     <span>{lang.nativeName}</span>
-                    {isActive && <Check className="w-3 h-3 ml-0.5" />}
+                    {isActive && <Check className="w-3.5 h-3.5 text-[#D8B45A]" />}
                   </button>
                 );
               })}
@@ -537,47 +601,22 @@ function AssistantContent() {
             </div>
           </div>
 
-          {/* QUICK SUGGESTED QUESTIONS BAR */}
+          {/* DYNAMIC MULTILINGUAL QUICK SUGGESTED QUESTIONS BAR */}
           <div className="space-y-2">
             <span className="text-xs font-bold text-[#5F6F62] flex items-center gap-1">
               <HelpCircle className="w-3.5 h-3.5 text-[#3F7D3A]" /> {t('assistant.quickPrompts', 'Quick Farming Questions')}:
             </span>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              <button
-                type="button"
-                onClick={() => handleSendMessage(`${cropNameStr} fertilizer dosage`)}
-                className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#EEF5E8] border border-stone-200 text-xs font-extrabold text-[#173F2A] shrink-0 transition-colors shadow-xs"
-              >
-                🌾 {cropNameStr} Fertilizer & Khad (खाद मात्रा)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSendMessage('Should I irrigate today based on weather?')}
-                className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#EEF5E8] border border-stone-200 text-xs font-extrabold text-[#173F2A] shrink-0 transition-colors shadow-xs"
-              >
-                💧 Rain & Irrigation Advisory (सिंचाई सलाह)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSendMessage('Yellow leaves and pest treatment')}
-                className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#EEF5E8] border border-stone-200 text-xs font-extrabold text-[#173F2A] shrink-0 transition-colors shadow-xs"
-              >
-                🐛 Yellow Leaves & Pest Spray (कीट व पत्ती धब्बा)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSendMessage('Soil pH test and NPK report')}
-                className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#EEF5E8] border border-stone-200 text-xs font-extrabold text-[#173F2A] shrink-0 transition-colors shadow-xs"
-              >
-                🧪 Soil Health Card & pH (मृदा परीक्षण)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSendMessage('Current mandi prices')}
-                className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#EEF5E8] border border-stone-200 text-xs font-extrabold text-[#173F2A] shrink-0 transition-colors shadow-xs"
-              >
-                📈 APMC Mandi Rates (मंडी भाव)
-              </button>
+              {activePrompts.map((item, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSendMessage(item.query)}
+                  className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#EEF5E8] border border-stone-200 text-xs font-extrabold text-[#173F2A] shrink-0 transition-colors shadow-xs"
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -607,7 +646,7 @@ function AssistantContent() {
                       <span>{msg.sender === 'user' ? 'You (किसान)' : 'Annadata AI Assistant'}</span>
                       {msg.language && (
                         <span className="px-2 py-0.2 rounded-md bg-stone-200/60 text-stone-700 text-[9px] font-bold">
-                          {msg.language.toUpperCase()}
+                          {LANGUAGE_SPEECH_MAP[(msg.language as SupportedLang) || 'hi']?.nativeName || msg.language.toUpperCase()}
                         </span>
                       )}
                     </span>
@@ -679,7 +718,7 @@ function AssistantContent() {
                       <button
                         type="button"
                         onClick={() => handleToggleAudio(msg.id, msg.text, msg.language)}
-                        className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 ${
+                        className={`px-3.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 ${
                           speakingMsgId === msg.id
                             ? 'bg-amber-100 border-amber-400 text-amber-900 shadow-sm animate-pulse'
                             : 'bg-white hover:bg-[#EEF5E8] border-stone-300 text-[#3F7D3A] hover:border-[#3F7D3A]'
@@ -826,15 +865,15 @@ function AssistantContent() {
           <div className="rounded-2xl bg-stone-50 border border-stone-200 p-3 space-y-1.5 text-[10px] text-stone-500">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
-                🔊 Voice Engine: <span className="text-[#3F7D3A] font-bold">{ttsDebug || 'Ready'}</span> · Speech Locale: <strong>{activeLangCode}</strong>
+                🔊 Voice Engine: <span className="text-[#3F7D3A] font-bold">{ttsDebug || 'Ready'}</span> · Active Language: <strong>{currentLangObj.nativeName} ({activeLangCode})</strong>
               </div>
               <button
                 type="button"
                 onClick={() => {
                   if (typeof window === 'undefined' || !window.speechSynthesis) return;
                   window.speechSynthesis.cancel();
-                  const testGreeting = generateAiResponse('hello', profile, soilReport, weather, i18n.language);
-                  handleToggleAudio('test_audio', testGreeting.text, i18n.language);
+                  const testGreeting = generateAiResponse('hello', profile, soilReport, weather, activeLang);
+                  handleToggleAudio('test_audio', testGreeting.text, activeLang);
                 }}
                 className="px-2.5 py-1 rounded-lg bg-[#3F7D3A] text-white text-[10px] font-bold hover:bg-[#285C32] transition-colors"
               >

@@ -33,13 +33,23 @@ const resources = {
   bn: { translation: bn },
 };
 
+const getInitialLanguage = (): string => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && ['en', 'hi', 'mr', 'ta', 'te', 'kn', 'bn'].includes(saved)) {
+      return saved;
+    }
+  }
+  return 'hi'; // Default to Hindi for India-focused farming platform
+};
+
 if (!i18n.isInitialized) {
   i18n
     .use(initReactI18next)
     .init({
       resources,
-      lng: 'en',
-      fallbackLng: 'en',
+      lng: getInitialLanguage(),
+      fallbackLng: 'hi',
       supportedLngs: ['en', 'hi', 'mr', 'ta', 'te', 'kn', 'bn'],
       interpolation: {
         escapeValue: false, // React handles XSS

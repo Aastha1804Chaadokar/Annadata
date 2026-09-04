@@ -33,6 +33,53 @@ interface LocalizedResponseBundle {
   dosages?: { product: string; amountPerAcre: string; timing: string }[];
 }
 
+export function resolveLanguage(
+  languageCode?: string,
+  profile?: FarmerProfile | null,
+  userQuery?: string
+): SupportedLang {
+  // 1. Explicit argument
+  if (languageCode && ['en', 'hi', 'mr', 'bn', 'ta', 'te', 'kn'].includes(languageCode.substring(0, 2))) {
+    return languageCode.substring(0, 2) as SupportedLang;
+  }
+
+  // 2. Query script detection
+  if (userQuery) {
+    if (/[\u0900-\u097F]/.test(userQuery)) return 'hi';
+    if (/[\u0980-\u09FF]/.test(userQuery)) return 'bn';
+    if (/[\u0B80-\u0BFF]/.test(userQuery)) return 'ta';
+    if (/[\u0C00-\u0C7F]/.test(userQuery)) return 'te';
+    if (/[\u0C80-\u0CFF]/.test(userQuery)) return 'kn';
+  }
+
+  // 3. i18next global state
+  if (i18n.language && ['en', 'hi', 'mr', 'bn', 'ta', 'te', 'kn'].includes(i18n.language.substring(0, 2))) {
+    return i18n.language.substring(0, 2) as SupportedLang;
+  }
+
+  // 4. Browser localStorage
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('annadata_language');
+    if (saved && ['en', 'hi', 'mr', 'ta', 'te', 'kn', 'bn'].includes(saved)) {
+      return saved as SupportedLang;
+    }
+  }
+
+  // 5. Farmer profile preference
+  if (profile?.language) {
+    const pl = profile.language.toLowerCase();
+    if (pl.includes('hindi') || pl.includes('हिन्दी')) return 'hi';
+    if (pl.includes('marathi') || pl.includes('मराठी')) return 'mr';
+    if (pl.includes('bengali') || pl.includes('বাংলা')) return 'bn';
+    if (pl.includes('tamil') || pl.includes('தமிழ்')) return 'ta';
+    if (pl.includes('telugu') || pl.includes('తెలుగు')) return 'te';
+    if (pl.includes('kannada') || pl.includes('ಕನ್ನಡ')) return 'kn';
+    if (pl.includes('english')) return 'en';
+  }
+
+  return 'hi'; // Default to Hindi
+}
+
 // Multilingual Knowledge Base Generator
 export function generateAiResponse(
   userQuery: string,
@@ -42,8 +89,7 @@ export function generateAiResponse(
   languageCode?: string
 ): ChatMessage {
   const queryLower = userQuery.toLowerCase().trim();
-  const rawLang = (languageCode || i18n.language || 'en').substring(0, 2) as SupportedLang;
-  const lang: SupportedLang = ['en', 'hi', 'mr', 'bn', 'ta', 'te', 'kn'].includes(rawLang) ? rawLang : 'hi';
+  const lang = resolveLanguage(languageCode, profile, userQuery);
 
   const cropStr = profile.currentCrop ? formatCropDisplay(profile.currentCrop) : profile.mainCrop || 'Maize (मक्का)';
   const village = profile.village || 'Aroda';
@@ -644,3 +690,47 @@ export function clearChatHistory(): void {
     console.error('Failed to clear chat history', e);
   }
 }
+
+// Dynamically converts existing message conversation into newly selected language
+export function retranslateMessages(
+  messages: ChatMessage[],
+  profile: FarmerProfile,
+  soilReport?: SoilReportRecord | null,
+  weather?: WeatherData | null,
+  targetLang: SupportedLang = 'hi'
+): ChatMessage[] {
+  return messages.map((msg) => {
+    if (msg.sender === 'user') return msg;
+
+    let topicQuery = 'hello';
+    if (msg.category === 'fertilizer') topicQuery = 'fertilizer';
+    else if (msg.category === 'irrigation') topicQuery = 'irrigation';
+    else if (msg.category === 'pest') topicQuery = 'pest';
+    else if (msg.category === 'crop_selection') topicQuery = 'crop';
+    else if (
+      msg.text.includes('मंडी') ||
+      msg.text.includes('Mandi') ||
+      msg.text.includes('APMC') ||
+      msg.text.includes('बाजार') ||
+      msg.text.includes('दर')
+    ) {
+      topicQuery = 'mandi';
+    } else if (
+      msg.text.includes('pH') ||
+      msg.text.includes('Soil') ||
+      msg.text.includes('मिट्टी') ||
+      msg.text.includes('मृदा') ||
+      msg.text.includes('माती')
+    ) {
+      topicQuery = 'soil';
+    }
+
+    const fresh = generateAiResponse(topicQuery, profile, soilReport, weather, targetLang);
+    return {
+      ...fresh,
+      id: msg.id,
+      timestamp: msg.timestamp,
+    };
+  });
+}
+

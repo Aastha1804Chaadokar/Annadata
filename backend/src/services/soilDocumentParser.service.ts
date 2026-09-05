@@ -65,16 +65,16 @@ export class SoilDocumentParserService {
 
       if (mimeType === 'application/pdf' || originalName.toLowerCase().endsWith('.pdf')) {
         try {
-          const pdfData = await pdfParse(fileBuffer);
-          rawText = pdfData.text || '';
+          if (pdfParse.PDFParse) {
+            const parser = new pdfParse.PDFParse({ data: fileBuffer });
+            const pdfData = await parser.getText();
+            rawText = pdfData?.text || '';
+          } else if (typeof pdfParse === 'function') {
+            const pdfData = await pdfParse(fileBuffer);
+            rawText = pdfData?.text || '';
+          }
         } catch (pdfErr) {
-          console.warn('Direct PDF text extraction failed, falling back to OCR:', pdfErr);
-        }
-
-        // If PDF had minimal or no searchable text (e.g. scanned PDF), try OCR
-        if (!rawText || rawText.trim().length < 40) {
-          isOcr = true;
-          rawText = await this.performTesseractOcr(fileBuffer);
+          console.warn('Direct PDF text extraction failed:', pdfErr);
         }
       } else if (
         mimeType.startsWith('image/') ||
@@ -97,7 +97,7 @@ export class SoilDocumentParserService {
       }
 
       // Check if uploaded image appears to be an ordinary landscape/field photo rather than a document
-      const isDocKeywords = /(soil|test|report|health|card|ph|nitrogen|potassium|phosphorus|icar|shc|lab|krishi|sample|nutrient)/i.test(
+      const isDocKeywords = /(soil|test|report|health|card|ph|nitrogen|potassium|phosphorus|icar|shc|lab|krishi|sample|nutrient|npk|carbon|ec)/i.test(
         rawText
       );
 
@@ -137,7 +137,7 @@ export class SoilDocumentParserService {
       const worker = await createWorker('eng');
       const ret = await worker.recognize(buffer);
       await worker.terminate();
-      return ret.data.text || '';
+      return ret.data?.text || '';
     } catch (e) {
       console.warn('Tesseract OCR error:', e);
       return '';

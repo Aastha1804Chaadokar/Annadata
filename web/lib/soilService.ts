@@ -388,7 +388,7 @@ export const uploadSoilReportFile = async (
   formData.append('report', file);
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/soil-reports/upload`, {
+    const res = await fetch(`${API_ENDPOINTS.SOIL_REPORTS}/upload`, {
       method: 'POST',
       body: formData,
     });
@@ -441,7 +441,7 @@ export const verifyAndSaveSoilReport = async (
   };
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/soil-reports/verify`, {
+    const res = await fetch(`${API_ENDPOINTS.SOIL_REPORTS}/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -538,7 +538,7 @@ export const deleteSoilReport = (id: string): void => {
     localStorage.setItem(SOIL_REPORTS_STORAGE_KEY, JSON.stringify(filtered));
 
     // Also trigger backend deletion
-    fetch(`${API_BASE_URL}/api/v1/soil-reports/${id}`, { method: 'DELETE' }).catch(() => {});
+    fetch(`${API_ENDPOINTS.SOIL_REPORTS}/${id}`, { method: 'DELETE' }).catch(() => {});
   } catch (e) {
     console.error('Failed to delete soil report', e);
   }

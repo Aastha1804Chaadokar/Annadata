@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CropRecommendation } from '../models/CropRecommendation.js';
+import { SoilReport } from '../models/SoilReport.js';
 import { CropRecommendationService } from '../services/cropRecommendation.service.js';
 import { isDatabaseConnected } from '../db/connection.js';
 
@@ -10,12 +11,34 @@ export const generateCropRecommendation = async (req: Request, res: Response): P
       farmId = 'default_farm',
       season = 'Kharif',
       irrigation = 'Rain-fed',
-      soil,
-      location,
       previousCrop,
       currentCrop,
       landSize,
+      state,
+      district,
     } = req.body;
+
+    let soil = req.body.soil;
+    let location = req.body.location || { state, district };
+
+    // Auto-fetch latest verified soil report if not explicitly provided
+    if (!soil && isDatabaseConnected()) {
+      const latestSoil = await SoilReport.findOne({
+        $or: [{ farmerId: String(farmerId) }, { farmId: String(farmId) }],
+        isVerified: true,
+      }).sort({ testDate: -1, createdAt: -1 });
+
+      if (latestSoil) {
+        soil = {
+          ph: latestSoil.ph,
+          nitrogen: latestSoil.nitrogen,
+          phosphorus: latestSoil.phosphorus,
+          potassium: latestSoil.potassium,
+          organicCarbon: latestSoil.organicCarbon,
+          soilType: latestSoil.soilType,
+        };
+      }
+    }
 
     const result = CropRecommendationService.generateRecommendations({
       season,
@@ -55,15 +78,21 @@ export const generateCropRecommendation = async (req: Request, res: Response): P
       savedDoc = await recDoc.save();
     }
 
-    res.status(201).json({
-      success: true,
+    const responseData = {
       recommendationId: savedDoc?._id || `rec_local_${Date.now()}`,
       season: result.season,
       engineType: result.engineType,
       disclaimer: result.disclaimer,
       inputSnapshot: savedDoc?.inputSnapshot || { season, irrigation, soil, location },
+      soilParameters: soil || null,
       recommendations: result.recommendations,
       createdAt: savedDoc?.createdAt || new Date().toISOString(),
+    };
+
+    res.status(201).json({
+      success: true,
+      data: responseData,
+      ...responseData,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || 'Failed to generate crop recommendations' });

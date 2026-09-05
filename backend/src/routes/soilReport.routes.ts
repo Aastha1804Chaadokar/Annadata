@@ -14,6 +14,8 @@ import {
   deleteSoilReport,
 } from '../controllers/soilReport.controller.js';
 
+import { authenticateToken } from '../middlewares/auth.middleware.js';
+
 const router = Router();
 
 // Ensure uploads folder exists
@@ -53,10 +55,14 @@ const upload = multer({
   },
 });
 
+// Apply auth middleware to resolve authenticated user if token present
+router.use(authenticateToken);
+
 // Routes
 router.post('/soil-reports/upload', upload.single('report'), uploadSoilReportDocument);
 router.post('/soil-reports/verify', verifyAndSaveSoilReport);
 router.get('/soil-reports/latest', getLatestVerifiedReport);
+router.get('/soil-reports/trends', getSoilTrends);
 router.get('/soil-reports/trends/:farmId', getSoilTrends);
 router.get('/soil-reports/file/:filename', getSoilReportFile);
 

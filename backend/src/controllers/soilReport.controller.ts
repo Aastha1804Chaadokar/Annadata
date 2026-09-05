@@ -58,18 +58,20 @@ export const verifyAndSaveSoilReport = async (req: Request, res: Response): Prom
       return;
     }
 
+    const authenticatedUser = (req as any).user;
+
     const {
-      farmerId = 'default_farmer',
+      farmerId = authenticatedUser ? `farmer_${authenticatedUser.mobile}` : 'default_farmer',
       farmId = 'default_farm',
-      userId,
-      farmerName,
+      userId = authenticatedUser?.id,
+      farmerName = authenticatedUser?.name,
       sampleId,
       labName,
       sampleDate,
       reportDate,
       village,
-      district,
-      state,
+      district = authenticatedUser?.district,
+      state = authenticatedUser?.state,
       soilType = 'Unknown',
       irrigationType = 'Rain-fed',
       crop,
@@ -138,10 +140,10 @@ export const verifyAndSaveSoilReport = async (req: Request, res: Response): Prom
     });
 
     const report = new SoilReport({
-      farmerId,
+      farmerId: authenticatedUser ? `farmer_${authenticatedUser.mobile}` : farmerId,
       farmId,
-      userId,
-      farmerName,
+      userId: authenticatedUser?.id || userId,
+      farmerName: farmerName || authenticatedUser?.name,
       sampleId,
       labName,
       sampleDate: sampleDate ? new Date(sampleDate) : undefined,
@@ -266,6 +268,7 @@ export const verifyAndSaveSoilReport = async (req: Request, res: Response): Prom
 
     res.status(201).json({
       success: true,
+      data: saved,
       report: saved,
       interpretation,
     });
@@ -286,7 +289,23 @@ export const getSoilReportsByFarm = async (req: Request, res: Response): Promise
       return;
     }
     const { farmId } = req.params;
-    const reports = await SoilReport.find({ farmId }).sort({ testDate: -1, createdAt: -1 });
+    const { farmerId } = req.query;
+    const authenticatedUser = (req as any).user;
+
+    let query: any = {};
+    if (authenticatedUser) {
+      query.$or = [
+        { userId: authenticatedUser.id },
+        { farmerId: authenticatedUser.id },
+        { farmerId: `farmer_${authenticatedUser.mobile}` },
+      ];
+    } else if (farmerId) {
+      query = { $or: [{ farmerId: String(farmerId) }, { farmId: String(farmId || farmerId) }] };
+    } else {
+      query = { farmId };
+    }
+
+    const reports = await SoilReport.find(query).sort({ testDate: -1, createdAt: -1 });
 
     const reportsWithInterpretation = reports.map((rep) => {
       const interpretation = SoilHealthService.interpretSoilHealth({
@@ -315,6 +334,7 @@ export const getSoilReportsByFarm = async (req: Request, res: Response): Promise
     res.status(200).json({
       success: true,
       count: reports.length,
+      data: reportsWithInterpretation,
       reports: reportsWithInterpretation,
     });
   } catch (error: any) {
@@ -328,11 +348,30 @@ export const getLatestVerifiedReport = async (req: Request, res: Response): Prom
       res.status(503).json({ success: false, error: 'Database service is temporarily unavailable.' });
       return;
     }
-    const { farmId = 'default_farm' } = req.query;
-    const latest = await SoilReport.findOne({ farmId, isVerified: true }).sort({ testDate: -1, createdAt: -1 });
+    const { farmId, farmerId } = req.query;
+    const authenticatedUser = (req as any).user;
+    const query: any = { isVerified: true };
+
+    if (authenticatedUser) {
+      query.$or = [
+        { userId: authenticatedUser.id },
+        { farmerId: authenticatedUser.id },
+        { farmerId: `farmer_${authenticatedUser.mobile}` },
+      ];
+    } else if (farmerId && farmId) {
+      query.$or = [{ farmerId: String(farmerId) }, { farmId: String(farmId) }];
+    } else if (farmerId) {
+      query.farmerId = String(farmerId);
+    } else if (farmId) {
+      query.farmId = String(farmId);
+    } else {
+      query.farmId = 'default_farm';
+    }
+
+    const latest = await SoilReport.findOne(query).sort({ testDate: -1, createdAt: -1 });
 
     if (!latest) {
-      res.status(200).json({ success: true, report: null, message: 'No verified soil report available.' });
+      res.status(200).json({ success: true, data: null, report: null, message: 'No verified soil report available.' });
       return;
     }
 
@@ -355,6 +394,7 @@ export const getLatestVerifiedReport = async (req: Request, res: Response): Prom
 
     res.status(200).json({
       success: true,
+      data: latest,
       report: latest,
       interpretation,
     });
@@ -369,8 +409,28 @@ export const getSoilTrends = async (req: Request, res: Response): Promise<void> 
       res.status(503).json({ success: false, error: 'Database service is temporarily unavailable.' });
       return;
     }
-    const { farmId = 'default_farm' } = req.params;
-    const reports = await SoilReport.find({ farmId, isVerified: true }).sort({ testDate: 1, createdAt: 1 });
+    const farmId = req.params.farmId || req.query.farmId;
+    const farmerId = req.query.farmerId;
+    const authenticatedUser = (req as any).user;
+    const query: any = { isVerified: true };
+
+    if (authenticatedUser) {
+      query.$or = [
+        { userId: authenticatedUser.id },
+        { farmerId: authenticatedUser.id },
+        { farmerId: `farmer_${authenticatedUser.mobile}` },
+      ];
+    } else if (farmerId && farmId) {
+      query.$or = [{ farmerId: String(farmerId) }, { farmId: String(farmId) }];
+    } else if (farmerId) {
+      query.farmerId = String(farmerId);
+    } else if (farmId) {
+      query.farmId = String(farmId);
+    } else {
+      query.farmId = 'default_farm';
+    }
+
+    const reports = await SoilReport.find(query).sort({ testDate: 1, createdAt: 1 });
 
     const trends = reports.map((r) => ({
       id: r._id,
@@ -387,6 +447,7 @@ export const getSoilTrends = async (req: Request, res: Response): Promise<void> 
     res.status(200).json({
       success: true,
       count: trends.length,
+      data: { trends },
       trends,
     });
   } catch (error: any) {

@@ -75,7 +75,7 @@ const ParameterDetailSchema = new Schema<IParameterDetail>(
     status: { type: String, default: 'Normal' },
     source: {
       type: String,
-      enum: ['ocr_extracted', 'manual_entry', 'lab_digital'],
+      enum: ['ocr_extracted', 'manual_entry', 'lab_digital', 'report_upload'],
       default: 'manual_entry',
     },
     confidence: { type: Number, min: 0, max: 100, default: 100 },

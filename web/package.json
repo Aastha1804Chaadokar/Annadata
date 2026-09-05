@@ -25,6 +25,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^17.0.12",
+    "sharp": "^0.35.4",
     "styled-jsx": "^5.1.6",
     "tailwindcss": "^4.3.3",
     "three": "0.163.0"

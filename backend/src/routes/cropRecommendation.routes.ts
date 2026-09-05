@@ -9,6 +9,7 @@ const router = Router();
 
 // /api/v1/crop-recommendations
 router.post('/crop-recommendations', generateCropRecommendation);
+router.post('/crop-recommendations/generate', generateCropRecommendation);
 router.get('/crop-recommendations/farm/:farmId', getCropRecommendationsByFarm);
 router.get('/crop-recommendations/:id', getCropRecommendationById);
 

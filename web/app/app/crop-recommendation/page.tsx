@@ -202,41 +202,48 @@ function CropRecommendationContent() {
               <div className="flex items-center justify-between pb-3 border-b border-stone-100">
                 <div className="flex items-center gap-2">
                   <Sprout className="w-5 h-5 text-[#3F7D3A]" />
-                  <h2 className="text-lg font-black text-[#285C32]">{t('dashboard.soilStatus')}</h2>
+                  <div>
+                    <h2 className="text-lg font-black text-[#285C32]">{t('dashboard.soilStatus', 'Soil Chemistry')}</h2>
+                    {soilReport && (
+                      <span className="text-[10px] text-stone-500 font-semibold block">
+                        Verified report • {new Date(soilReport.testDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <Link href="/app/soil" className="text-xs font-bold text-[#3F7D3A] hover:underline">
-                  {soilReport ? `Tested (${soilReport.testDate})` : `+ ${t('soil.addReport')}`}
+                  {soilReport ? 'View Position' : `+ ${t('soil.addReport', 'Upload Report')}`}
                 </Link>
               </div>
 
               {soilReport ? (
                 <div className="grid grid-cols-5 gap-2 text-center text-xs">
-                  <div className="p-2 rounded-xl bg-[#F8FAF3] border">
+                  <div className="p-2 rounded-xl bg-[#F8FAF3] border border-stone-100">
                     <span className="text-[10px] text-[#667267] block font-bold">pH</span>
                     <strong className="text-sm text-[#285C32] block">{soilReport.ph}</strong>
                   </div>
-                  <div className="p-2 rounded-xl bg-[#F8FAF3] border">
+                  <div className="p-2 rounded-xl bg-[#F8FAF3] border border-stone-100">
                     <span className="text-[10px] text-[#667267] block font-bold">N</span>
-                    <strong className="text-xs text-[#285C32] block">{soilReport.nitrogen.value}</strong>
+                    <strong className="text-xs text-[#285C32] block">{soilReport.nitrogen?.value}</strong>
                   </div>
-                  <div className="p-2 rounded-xl bg-[#F8FAF3] border">
+                  <div className="p-2 rounded-xl bg-[#F8FAF3] border border-stone-100">
                     <span className="text-[10px] text-[#667267] block font-bold">P</span>
-                    <strong className="text-xs text-[#285C32] block">{soilReport.phosphorus.value}</strong>
+                    <strong className="text-xs text-[#285C32] block">{soilReport.phosphorus?.value}</strong>
                   </div>
-                  <div className="p-2 rounded-xl bg-[#F8FAF3] border">
+                  <div className="p-2 rounded-xl bg-[#F8FAF3] border border-stone-100">
                     <span className="text-[10px] text-[#667267] block font-bold">K</span>
-                    <strong className="text-xs text-[#285C32] block">{soilReport.potassium.value}</strong>
+                    <strong className="text-xs text-[#285C32] block">{soilReport.potassium?.value}</strong>
                   </div>
-                  <div className="p-2 rounded-xl bg-[#F8FAF3] border">
+                  <div className="p-2 rounded-xl bg-[#F8FAF3] border border-stone-100">
                     <span className="text-[10px] text-[#667267] block font-bold">OC</span>
-                    <strong className="text-xs text-[#285C32] block">{soilReport.organicCarbon.value}%</strong>
+                    <strong className="text-xs text-[#285C32] block">{soilReport.organicCarbon?.value}%</strong>
                   </div>
                 </div>
               ) : (
                 <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 font-bold flex items-center justify-between">
-                  <span>{t('dashboard.soilNotAdded')}</span>
+                  <span>No verified soil report available.</span>
                   <Link href="/app/soil">
-                    <Button size="sm">{t('dashboard.addSoilInfo')}</Button>
+                    <Button size="sm">Upload Soil Report</Button>
                   </Link>
                 </div>
               )}

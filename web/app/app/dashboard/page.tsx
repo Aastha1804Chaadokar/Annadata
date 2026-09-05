@@ -246,23 +246,36 @@ function DashboardContent() {
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-black text-[#285C32] mb-1">🌱 {t('navbar.soilHealth')}</h3>
+                  <h3 className="text-xl font-black text-[#285C32] mb-1">🌱 {t('navbar.soilHealth', 'Soil Health')}</h3>
                   {hasSoil ? (
-                    <div className="space-y-1 mb-4 text-xs">
-                      <p className="font-bold text-[#3F7D3A]">Last tested: {soilReport.testDate}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-[#667267] font-semibold">
+                    <div className="space-y-2 mb-4 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-stone-500">
+                          Last tested: <strong>{new Date(soilReport.testDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
+                        </span>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                          soilReport.interpretation?.overallStatus === 'GOOD'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : 'bg-amber-50 text-amber-900 border-amber-300'
+                        }`}>
+                          {soilReport.interpretation?.overallStatus || 'BALANCED'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] text-[#667267] font-semibold bg-[#F8FAF3] p-2.5 rounded-xl border border-stone-100">
                         <span>pH: <strong className="text-[#285C32]">{soilReport.ph}</strong></span>
                         <span>•</span>
-                        <span>N: <strong>{soilReport.nitrogen.value}</strong></span>
-                        <span>P: <strong>{soilReport.phosphorus.value}</strong></span>
-                        <span>K: <strong>{soilReport.potassium.value}</strong></span>
+                        <span>OC: <strong>{soilReport.organicCarbon?.value}%</strong></span>
+                        <span>•</span>
+                        <span>N: <strong>{soilReport.nitrogen?.value}</strong></span>
+                        <span>P: <strong>{soilReport.phosphorus?.value}</strong></span>
+                        <span>K: <strong>{soilReport.potassium?.value}</strong></span>
                       </div>
                     </div>
                   ) : (
                     <div className="mb-4">
-                      <p className="text-xs font-bold text-amber-700 mb-1">{t('dashboard.soilNotAdded')}</p>
+                      <p className="text-xs font-bold text-amber-700 mb-1">{t('dashboard.soilNotAdded', 'No verified soil test added')}</p>
                       <p className="text-xs text-[#667267] leading-relaxed">
-                        {t('dashboard.soilCardDesc')}
+                        {t('dashboard.soilCardDesc', 'Upload your Soil Health Card report to unlock AI crop recommendations.')}
                       </p>
                     </div>
                   )}
@@ -270,7 +283,7 @@ function DashboardContent() {
 
                 <Link href="/app/soil" className="pt-3 border-t border-stone-100">
                   <Button variant={hasSoil ? 'secondary' : 'primary'} size="sm" className="w-full justify-between" icon={<ArrowRight className="w-4 h-4" />}>
-                    <span>{hasSoil ? t('dashboard.viewSoilHealth') : t('dashboard.addSoilInfo')}</span>
+                    <span>{hasSoil ? 'View Current Soil Position' : 'Upload Soil Report'}</span>
                   </Button>
                 </Link>
               </div>

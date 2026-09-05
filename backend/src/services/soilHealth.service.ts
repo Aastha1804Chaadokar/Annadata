@@ -1,231 +1,406 @@
-export interface SoilValueInput {
+export interface ParameterEvaluationInput {
+  value?: number;
+  unit?: string;
+  source?: string;
+}
+
+export interface SoilHealthInput {
   ph: number;
-  nitrogen: { value: number; unit: string };
-  phosphorus: { value: number; unit: string };
-  potassium: { value: number; unit: string };
-  organicCarbon: { value: number; unit: string };
-  electricalConductivity?: { value?: number; unit?: string };
+  nitrogen?: ParameterEvaluationInput;
+  phosphorus?: ParameterEvaluationInput;
+  potassium?: ParameterEvaluationInput;
+  organicCarbon?: ParameterEvaluationInput;
+  electricalConductivity?: ParameterEvaluationInput;
+  sulfur?: ParameterEvaluationInput;
+  zinc?: ParameterEvaluationInput;
+  iron?: ParameterEvaluationInput;
+  copper?: ParameterEvaluationInput;
+  manganese?: ParameterEvaluationInput;
+  boron?: ParameterEvaluationInput;
   soilType?: string;
   irrigationType?: string;
+  crop?: string;
 }
 
-export interface SoilParameterResult {
+export interface SoilParameterEvaluation {
   parameter: string;
+  code: string;
   value: number;
   unit: string;
-  status: string;
+  status: 'OPTIMAL' | 'NORMAL' | 'LOW' | 'MEDIUM' | 'HIGH' | 'DEFICIENT' | 'NEEDS ATTENTION' | 'RECORDED';
+  benchmark: string;
+  category: 'pH' | 'Primary' | 'Secondary' | 'Micronutrient' | 'Organic' | 'Salinity';
   explanation: string;
-  category: 'pH' | 'Nutrient' | 'Organic' | 'Salinity';
+  managementGuidance?: string;
+  isAvailable: boolean;
 }
 
-export interface SoilInterpretationSummary {
-  overallHealth: string;
-  parameters: SoilParameterResult[];
-  recommendations: string[];
+export interface SoilPositionSummary {
+  overallStatus: 'GOOD' | 'NEEDS ATTENTION' | 'SIGNIFICANT DEFICIENCIES DETECTED';
+  overallStatusTitle: string;
+  summaryExplanation: string;
+  attentionCount: number;
+  optimalCount: number;
+  totalEvaluated: number;
+  parameters: SoilParameterEvaluation[];
+  practicalGuidance: string[];
 }
 
 export class SoilHealthService {
   /**
-   * Interpret soil values scientifically without hardcoding logic in frontend components.
+   * Scientifically evaluate soil parameters according to Indian ICAR / SHC norms
    */
-  public static interpretSoilHealth(input: SoilValueInput): SoilInterpretationSummary {
-    const results: SoilParameterResult[] = [];
-    const recommendations: string[] = [];
+  public static interpretSoilHealth(input: SoilHealthInput): SoilPositionSummary {
+    const parameters: SoilParameterEvaluation[] = [];
+    const practicalGuidance: string[] = [];
+    const attentionItems: string[] = [];
+    const normalItems: string[] = [];
 
     // 1. pH Interpretation
     const phVal = input.ph;
-    let phStatus = 'Suitable';
-    let phExp = 'Shows how acidic or alkaline the soil is. Your pH is in an optimal range for most Indian field crops.';
+    let phStatus: SoilParameterEvaluation['status'] = 'NORMAL';
+    let phExp = 'Shows how acidic or alkaline the soil is. Ideal range (6.0 - 7.5) for nutrient absorption.';
+    let phGuidance = '';
 
     if (phVal < 6.0) {
-      phStatus = 'Acidic';
-      phExp = 'Shows how acidic or alkaline the soil is. Acidic soil can reduce key nutrient availability for crops.';
-      recommendations.push('Consider applying agricultural lime to balance acidic soil pH.');
+      phStatus = 'LOW';
+      phExp = 'Acidic soil reaction. Can limit root availability of phosphorus, calcium, and magnesium.';
+      phGuidance = 'Consider applying agricultural lime (calcium carbonate) or dolomite based on local soil test lab recommendation.';
+      attentionItems.push(`soil is acidic (pH ${phVal})`);
+      practicalGuidance.push(phGuidance);
     } else if (phVal > 7.8) {
-      phStatus = 'Alkaline';
-      phExp = 'Shows how acidic or alkaline the soil is. High alkalinity may lock micronutrients like Zinc and Iron.';
-      recommendations.push('Consider applying gypsum or organic compost to lower soil alkalinity.');
+      phStatus = 'HIGH';
+      phExp = 'Alkaline soil reaction. High pH may bind critical micronutrients like Zinc, Iron, and Manganese.';
+      phGuidance = 'Apply agricultural gypsum or increase well-decomposed organic compost to help moderate soil alkalinity.';
+      attentionItems.push(`soil is alkaline (pH ${phVal})`);
+      practicalGuidance.push(phGuidance);
     } else {
-      phStatus = 'Suitable';
-      phExp = 'Shows how acidic or alkaline the soil is. Ideal range (6.0 - 7.5) for nutrient absorption.';
+      phStatus = 'OPTIMAL';
+      normalItems.push(`pH (${phVal}) is optimal`);
     }
 
-    results.push({
-      parameter: 'pH',
+    parameters.push({
+      parameter: 'Soil Reaction (pH)',
+      code: 'ph',
       value: phVal,
       unit: '',
       status: phStatus,
-      explanation: phExp,
+      benchmark: '6.0 - 7.5',
       category: 'pH',
+      explanation: phExp,
+      managementGuidance: phGuidance || 'Maintain current organic matter practices to keep soil reaction balanced.',
+      isAvailable: true,
     });
 
-    // 2. Nitrogen (N) Interpretation
-    // Standard SHC benchmark for N: < 280 kg/ha = Low, 280 - 560 kg/ha = Medium, > 560 kg/ha = High
-    const nVal = input.nitrogen.value;
-    const nUnit = input.nitrogen.unit || 'kg/ha';
-    let nStatus = 'Medium';
-    let nExp = 'Important for plant growth and leaf development.';
+    // 2. Organic Carbon (OC) in %
+    if (input.organicCarbon && typeof input.organicCarbon.value === 'number') {
+      const oc = input.organicCarbon.value;
+      const unit = input.organicCarbon.unit || '%';
+      let ocStatus: SoilParameterEvaluation['status'] = 'MEDIUM';
+      let ocExp = 'Measures soil organic matter, microbial activity, and moisture retention capacity.';
+      let ocGuidance = '';
 
-    if (nUnit.toLowerCase() === 'kg/ha') {
-      if (nVal < 280) {
-        nStatus = 'Low';
-        nExp = 'Important for plant growth and leaf development. Your soil is low in available Nitrogen.';
-        recommendations.push('Incorporate leguminous cover crops or split urea / organic compost applications.');
-      } else if (nVal > 560) {
-        nStatus = 'High';
-        nExp = 'Important for plant growth and leaf development. Ample Nitrogen present.';
+      if (oc < 0.50) {
+        ocStatus = 'LOW';
+        ocExp = 'Low organic carbon reduces water-holding capacity and microbial nutrient cycling.';
+        ocGuidance = 'Incorporate 5-10 tonnes/ha Farmyard Manure (FYM), vermicompost, or green manuring with Sesbania (Dhaincha) / Sunhemp.';
+        attentionItems.push(`low organic carbon (${oc}%)`);
+        practicalGuidance.push(ocGuidance);
+      } else if (oc > 0.75) {
+        ocStatus = 'OPTIMAL';
+        ocExp = 'High organic carbon supporting vigorous microbial activity and soil crumb structure.';
+        normalItems.push(`organic carbon (${oc}%) is optimal`);
       } else {
-        nStatus = 'Medium';
-        nExp = 'Important for plant growth and leaf development. Adequate Nitrogen level for normal vegetative growth.';
-      }
-    } else {
-      nStatus = 'Recorded';
-      nExp = `Nitrogen recorded at ${nVal} ${nUnit}. Unit requires standardized SHC conversion.`;
-    }
-
-    results.push({
-      parameter: 'Nitrogen (N)',
-      value: nVal,
-      unit: nUnit,
-      status: nStatus,
-      explanation: nExp,
-      category: 'Nutrient',
-    });
-
-    // 3. Phosphorus (P) Interpretation
-    // Benchmark P: < 10 kg/ha (or < 23 P2O5) = Low, 10 - 25 = Medium, > 25 = High
-    const pVal = input.phosphorus.value;
-    const pUnit = input.phosphorus.unit || 'kg/ha';
-    let pStatus = 'Medium';
-    let pExp = 'Helps root development, flowering, and seed formation.';
-
-    if (pUnit.toLowerCase() === 'kg/ha') {
-      if (pVal < 11) {
-        pStatus = 'Low';
-        pExp = 'Helps root development and seed formation. Low Phosphorus can slow root establishment.';
-        recommendations.push('Apply Single Super Phosphate (SSP) or DAP at sowing time near root zone.');
-      } else if (pVal > 25) {
-        pStatus = 'High';
-        pExp = 'Helps root development and seed formation. Excellent available Phosphorus status.';
-      } else {
-        pStatus = 'Medium';
-        pExp = 'Helps root development and seed formation. Moderate Phosphorus level.';
-      }
-    } else {
-      pStatus = 'Recorded';
-      pExp = `Phosphorus recorded at ${pVal} ${pUnit}.`;
-    }
-
-    results.push({
-      parameter: 'Phosphorus (P)',
-      value: pVal,
-      unit: pUnit,
-      status: pStatus,
-      explanation: pExp,
-      category: 'Nutrient',
-    });
-
-    // 4. Potassium (K) Interpretation
-    // Benchmark K: < 108 kg/ha = Low, 108 - 280 = Medium, > 280 = High
-    const kVal = input.potassium.value;
-    const kUnit = input.potassium.unit || 'kg/ha';
-    let kStatus = 'Medium';
-    let kExp = 'Improves disease resistance, grain weight, and drought tolerance.';
-
-    if (kUnit.toLowerCase() === 'kg/ha') {
-      if (kVal < 110) {
-        kStatus = 'Low';
-        kExp = 'Improves disease resistance and drought tolerance. Low Potassium can make crops susceptible to stress.';
-        recommendations.push('Apply Muriate of Potash (MOP) to boost crop stamina and pest resilience.');
-      } else if (kVal > 280) {
-        kStatus = 'High';
-        kExp = 'Improves disease resistance and grain quality. High Potassium status.';
-      } else {
-        kStatus = 'Medium';
-        kExp = 'Improves disease resistance and drought tolerance. Good Potassium balance.';
-      }
-    } else {
-      kStatus = 'Recorded';
-      pExp = `Potassium recorded at ${kVal} ${kUnit}.`;
-    }
-
-    results.push({
-      parameter: 'Potassium (K)',
-      value: kVal,
-      unit: kUnit,
-      status: kStatus,
-      explanation: kExp,
-      category: 'Nutrient',
-    });
-
-    // 5. Organic Carbon (OC) Interpretation
-    // Benchmark OC (%): < 0.5% = Low, 0.5% - 0.75% = Medium, > 0.75% = High / Optimal
-    const ocVal = input.organicCarbon.value;
-    const ocUnit = input.organicCarbon.unit || '%';
-    let ocStatus = 'Medium';
-    let ocExp = 'Measures soil organic matter, microbial activity, and moisture retention capacity.';
-
-    if (ocVal < 0.5) {
-      ocStatus = 'Low';
-      ocExp = 'Measures soil organic matter. Low organic carbon reduces soil water holding capacity.';
-      recommendations.push('Add farmyard manure (FYM), vermicompost, or practice green manuring (Dhaincha/Sunhemp).');
-    } else if (ocVal > 0.75) {
-      ocStatus = 'Optimal';
-      ocExp = 'Measures soil organic matter. Excellent organic carbon levels promoting healthy soil biology.';
-    } else {
-      ocStatus = 'Medium';
-      ocExp = 'Measures soil organic matter. Satisfactory organic carbon content.';
-    }
-
-    results.push({
-      parameter: 'Organic Carbon (OC)',
-      value: ocVal,
-      unit: ocUnit,
-      status: ocStatus,
-      explanation: ocExp,
-      category: 'Organic',
-    });
-
-    // 6. Electrical Conductivity (EC) if present
-    if (input.electricalConductivity && typeof input.electricalConductivity.value === 'number') {
-      const ecVal = input.electricalConductivity.value;
-      const ecUnit = input.electricalConductivity.unit || 'dS/m';
-      let ecStatus = 'Normal';
-      let ecExp = 'Measures total soluble salts in soil.';
-
-      if (ecVal > 2.0) {
-        ecStatus = 'High Salinity';
-        ecExp = 'Measures soluble salt content. High salinity can cause salt stress in sensitive crops.';
-        recommendations.push('Ensure good field drainage and flush excess salts with fresh irrigation water.');
-      } else {
-        ecStatus = 'Normal';
-        ecExp = 'Measures soluble salts. Soluble salt level is safe for crop roots.';
+        ocStatus = 'MEDIUM';
+        ocExp = 'Moderate organic carbon status. Satisfactory baseline for crop growth.';
+        normalItems.push(`organic carbon (${oc}%) is medium`);
       }
 
-      results.push({
-        parameter: 'Electrical Conductivity (EC)',
-        value: ecVal,
-        unit: ecUnit,
-        status: ecStatus,
-        explanation: ecExp,
-        category: 'Salinity',
+      parameters.push({
+        parameter: 'Organic Carbon (OC)',
+        code: 'oc',
+        value: oc,
+        unit,
+        status: ocStatus,
+        benchmark: '> 0.75 % (High)',
+        category: 'Organic',
+        explanation: ocExp,
+        managementGuidance: ocGuidance || 'Continue regular additions of crop residue and organic amendments.',
+        isAvailable: true,
       });
     }
 
-    // Overall Profile summary text
-    let overall = 'Balanced Soil Profile';
-    if (phStatus === 'Acidic' || phStatus === 'Alkaline' || nStatus === 'Low' || ocStatus === 'Low') {
-      overall = 'Needs Nutrient Management';
-    } else if (nStatus === 'Medium' && pStatus === 'Medium' && kStatus === 'Medium') {
-      overall = 'Good Health Profile';
-    } else if (ocStatus === 'Optimal' && phStatus === 'Suitable') {
-      overall = 'Optimal Soil Health';
+    // 3. Available Nitrogen (N) in kg/ha
+    if (input.nitrogen && typeof input.nitrogen.value === 'number') {
+      const n = input.nitrogen.value;
+      const unit = input.nitrogen.unit || 'kg/ha';
+      let nStatus: SoilParameterEvaluation['status'] = 'MEDIUM';
+      let nExp = 'Drives vegetative plant growth, tillering, and leaf chlorophyll development.';
+      let nGuidance = '';
+
+      if (n < 280) {
+        nStatus = 'LOW';
+        nExp = 'Below reference range (< 280 kg/ha). Nitrogen shortage can slow vegetative canopy establishment.';
+        nGuidance = 'Plan split nitrogen applications (e.g. neem-coated urea at sowing, tillering, and panicle initiation) or intercrop with pulses.';
+        attentionItems.push(`low available nitrogen (${n} kg/ha)`);
+        practicalGuidance.push(nGuidance);
+      } else if (n > 560) {
+        nStatus = 'HIGH';
+        nExp = 'Abundant available Nitrogen (> 560 kg/ha). Ample reserves for crop growth.';
+        normalItems.push(`nitrogen (${n} kg/ha) is high`);
+      } else {
+        nStatus = 'MEDIUM';
+        nExp = 'Adequate available Nitrogen (280 - 560 kg/ha) for balanced vegetative development.';
+        normalItems.push(`nitrogen (${n} kg/ha) is medium`);
+      }
+
+      parameters.push({
+        parameter: 'Available Nitrogen (N)',
+        code: 'n',
+        value: n,
+        unit,
+        status: nStatus,
+        benchmark: '280 - 560 kg/ha',
+        category: 'Primary',
+        explanation: nExp,
+        managementGuidance: nGuidance || 'Apply recommended split doses of nitrogen matched to crop stage.',
+        isAvailable: true,
+      });
+    }
+
+    // 4. Available Phosphorus (P) in kg/ha
+    if (input.phosphorus && typeof input.phosphorus.value === 'number') {
+      const p = input.phosphorus.value;
+      const unit = input.phosphorus.unit || 'kg/ha';
+      let pStatus: SoilParameterEvaluation['status'] = 'MEDIUM';
+      let pExp = 'Essential for root proliferation, early seedling vigor, flowering, and grain filling.';
+      let pGuidance = '';
+
+      if (p < 10) {
+        pStatus = 'LOW';
+        pExp = 'Below reference range (< 10 kg/ha). Can delay root establishment and flowering.';
+        pGuidance = 'Apply basal Single Super Phosphate (SSP) or DAP placed 3-5 cm below seed level during sowing.';
+        attentionItems.push(`low phosphorus (${p} kg/ha)`);
+        practicalGuidance.push(pGuidance);
+      } else if (p > 25) {
+        pStatus = 'HIGH';
+        pExp = 'High phosphorus reserve (> 25 kg/ha). Promotes strong root network.';
+        normalItems.push(`phosphorus (${p} kg/ha) is high`);
+      } else {
+        pStatus = 'MEDIUM';
+        pExp = 'Moderate phosphorus status (10 - 25 kg/ha).';
+        normalItems.push(`phosphorus (${p} kg/ha) is medium`);
+      }
+
+      parameters.push({
+        parameter: 'Available Phosphorus (P)',
+        code: 'p',
+        value: p,
+        unit,
+        status: pStatus,
+        benchmark: '10 - 25 kg/ha',
+        category: 'Primary',
+        explanation: pExp,
+        managementGuidance: pGuidance || 'Maintain balanced basal phosphorus fertilization.',
+        isAvailable: true,
+      });
+    }
+
+    // 5. Available Potassium (K) in kg/ha
+    if (input.potassium && typeof input.potassium.value === 'number') {
+      const k = input.potassium.value;
+      const unit = input.potassium.unit || 'kg/ha';
+      let kStatus: SoilParameterEvaluation['status'] = 'MEDIUM';
+      let kExp = 'Improves drought resilience, stem strength, pest resistance, and grain quality.';
+      let kGuidance = '';
+
+      if (k < 108) {
+        kStatus = 'LOW';
+        kExp = 'Below reference range (< 108 kg/ha). Can reduce crop resistance to environmental stress and lodging.';
+        kGuidance = 'Apply Muriate of Potash (MOP / 0-0-60) at basal sowing or early vegetative stage.';
+        attentionItems.push(`low potassium (${k} kg/ha)`);
+        practicalGuidance.push(kGuidance);
+      } else if (k > 280) {
+        kStatus = 'HIGH';
+        kExp = 'High potassium reserve (> 280 kg/ha). Supports excellent drought tolerance and grain weight.';
+        normalItems.push(`potassium (${k} kg/ha) is high`);
+      } else {
+        kStatus = 'MEDIUM';
+        kExp = 'Satisfactory potassium status (108 - 280 kg/ha).';
+        normalItems.push(`potassium (${k} kg/ha) is medium`);
+      }
+
+      parameters.push({
+        parameter: 'Available Potassium (K)',
+        code: 'k',
+        value: k,
+        unit,
+        status: kStatus,
+        benchmark: '108 - 280 kg/ha',
+        category: 'Primary',
+        explanation: kExp,
+        managementGuidance: kGuidance || 'Continue standard potash replenishment according to crop removal rates.',
+        isAvailable: true,
+      });
+    }
+
+    // 6. Electrical Conductivity (EC) in dS/m
+    if (input.electricalConductivity && typeof input.electricalConductivity.value === 'number') {
+      const ec = input.electricalConductivity.value;
+      const unit = input.electricalConductivity.unit || 'dS/m';
+      let ecStatus: SoilParameterEvaluation['status'] = 'NORMAL';
+      let ecExp = 'Measures concentration of soluble salts in soil water solution.';
+      let ecGuidance = '';
+
+      if (ec > 2.0) {
+        ecStatus = 'HIGH';
+        ecExp = 'High electrical conductivity indicating potential soil salinity stress on sensitive roots.';
+        ecGuidance = 'Ensure deep field drainage and irrigate with low-salinity water to leach excess soluble salts.';
+        attentionItems.push(`elevated salinity (EC ${ec} dS/m)`);
+        practicalGuidance.push(ecGuidance);
+      } else {
+        ecStatus = 'NORMAL';
+        normalItems.push(`salinity (EC ${ec} dS/m) is normal`);
+      }
+
+      parameters.push({
+        parameter: 'Electrical Conductivity (EC)',
+        code: 'ec',
+        value: ec,
+        unit,
+        status: ecStatus,
+        benchmark: '< 1.0 dS/m (Normal)',
+        category: 'Salinity',
+        explanation: ecExp,
+        managementGuidance: ecGuidance || 'Soluble salt level is safe for field crops.',
+        isAvailable: true,
+      });
+    }
+
+    // 7. Sulphur (S) in ppm
+    if (input.sulfur && typeof input.sulfur.value === 'number') {
+      const s = input.sulfur.value;
+      let sStatus: SoilParameterEvaluation['status'] = 'NORMAL';
+      let sGuidance = '';
+      if (s < 10.0) {
+        sStatus = 'DEFICIENT';
+        sGuidance = 'Apply gypsum or elemental sulphur (20-25 kg/ha) especially before oilseed or pulse crops.';
+        attentionItems.push(`sulphur deficient (${s} ppm)`);
+        practicalGuidance.push(sGuidance);
+      } else {
+        sStatus = 'OPTIMAL';
+        normalItems.push(`sulphur (${s} ppm) is sufficient`);
+      }
+      parameters.push({
+        parameter: 'Available Sulphur (S)',
+        code: 's',
+        value: s,
+        unit: 'ppm',
+        status: sStatus,
+        benchmark: '>= 10.0 ppm',
+        category: 'Secondary',
+        explanation: 'Crucial for oil synthesis in oilseeds and protein synthesis in pulses.',
+        managementGuidance: sGuidance || 'Sulphur level is adequate.',
+        isAvailable: true,
+      });
+    }
+
+    // 8. Zinc (Zn) in ppm
+    if (input.zinc && typeof input.zinc.value === 'number') {
+      const zn = input.zinc.value;
+      let znStatus: SoilParameterEvaluation['status'] = 'NORMAL';
+      let znGuidance = '';
+      if (zn < 0.60) {
+        znStatus = 'DEFICIENT';
+        znGuidance = 'Apply Zinc Sulphate (20-25 kg/ha ZnSO4) as soil basal dressing or foliar spray (0.5%) for standing crop.';
+        attentionItems.push(`zinc deficient (${zn} ppm)`);
+        practicalGuidance.push(znGuidance);
+      } else {
+        znStatus = 'OPTIMAL';
+        normalItems.push(`zinc (${zn} ppm) is sufficient`);
+      }
+      parameters.push({
+        parameter: 'Available Zinc (Zn)',
+        code: 'zn',
+        value: zn,
+        unit: 'ppm',
+        status: znStatus,
+        benchmark: '>= 0.60 ppm',
+        category: 'Micronutrient',
+        explanation: 'Essential enzyme activator; deficiency causes Khaira disease in paddy and leaf bronzing.',
+        managementGuidance: znGuidance || 'Zinc level is sufficient.',
+        isAvailable: true,
+      });
+    }
+
+    // 9. Iron (Fe) in ppm
+    if (input.iron && typeof input.iron.value === 'number') {
+      const fe = input.iron.value;
+      let feStatus: SoilParameterEvaluation['status'] = 'NORMAL';
+      let feGuidance = '';
+      if (fe < 4.5) {
+        feStatus = 'DEFICIENT';
+        feGuidance = 'Apply Ferrous Sulphate (FeSO4) or foliar spray with 1% FeSO4 + 0.1% citric acid.';
+        attentionItems.push(`iron deficient (${fe} ppm)`);
+        practicalGuidance.push(feGuidance);
+      } else {
+        feStatus = 'OPTIMAL';
+        normalItems.push(`iron (${fe} ppm) is sufficient`);
+      }
+      parameters.push({
+        parameter: 'Available Iron (Fe)',
+        code: 'fe',
+        value: fe,
+        unit: 'ppm',
+        status: feStatus,
+        benchmark: '>= 4.5 ppm',
+        category: 'Micronutrient',
+        explanation: 'Essential for chlorophyll synthesis and electron transport in plant respiration.',
+        managementGuidance: feGuidance || 'Iron level is sufficient.',
+        isAvailable: true,
+      });
+    }
+
+    // Overall Status Computation
+    const attentionCount = parameters.filter((p) =>
+      ['LOW', 'HIGH', 'DEFICIENT', 'NEEDS ATTENTION'].includes(p.status)
+    ).length;
+    const optimalCount = parameters.filter((p) => ['OPTIMAL', 'NORMAL', 'MEDIUM'].includes(p.status)).length;
+    const totalEvaluated = parameters.length;
+
+    let overallStatus: SoilPositionSummary['overallStatus'] = 'GOOD';
+    let overallStatusTitle = 'Good Soil Position';
+
+    if (attentionCount >= 3) {
+      overallStatus = 'SIGNIFICANT DEFICIENCIES DETECTED';
+      overallStatusTitle = 'Significant Deficiencies Detected';
+    } else if (attentionCount >= 1) {
+      overallStatus = 'NEEDS ATTENTION';
+      overallStatusTitle = 'Needs Attention';
+    } else {
+      overallStatus = 'GOOD';
+      overallStatusTitle = 'Good Soil Position';
+    }
+
+    // Transparent reasoning
+    let summaryExplanation = '';
+    if (attentionItems.length > 0) {
+      summaryExplanation = `Your latest soil report indicates ${attentionItems.join(', ')}, while ${
+        normalItems.length > 0 ? normalItems.slice(0, 3).join(', ') : 'other parameters'
+      } are within the reference range.`;
+    } else {
+      summaryExplanation = `All measured primary and micronutrient levels are balanced and fall within the recommended agronomic reference ranges for your crop.`;
     }
 
     return {
-      overallHealth: overall,
-      parameters: results,
-      recommendations,
+      overallStatus,
+      overallStatusTitle,
+      summaryExplanation,
+      attentionCount,
+      optimalCount,
+      totalEvaluated,
+      parameters,
+      practicalGuidance: Array.from(new Set(practicalGuidance)),
     };
   }
 }

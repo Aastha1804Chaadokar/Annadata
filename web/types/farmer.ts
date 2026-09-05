@@ -45,6 +45,7 @@ export interface FarmerProfile {
   landSize: string;
   landUnit: 'Acres' | 'Bigha' | 'Hectares';
   irrigation: IrrigationType;
+  soilType?: string;
   channelPreference: CommunicationChannel;
   createdAt: string;
   // Spatial & Administrative Location Data

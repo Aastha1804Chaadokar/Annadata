@@ -1,98 +1,282 @@
 import { Request, Response } from 'express';
+import path from 'path';
+import fs from 'fs';
 import { SoilReport } from '../models/SoilReport.js';
 import { SoilHealthService } from '../services/soilHealth.service.js';
+import { SoilDocumentParserService } from '../services/soilDocumentParser.service.js';
 import { isDatabaseConnected } from '../db/connection.js';
 
-export const createSoilReport = async (req: Request, res: Response): Promise<void> => {
+export const uploadSoilReportDocument = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ success: false, error: 'Please upload a PDF, JPG, JPEG, or PNG soil report file.' });
+      return;
+    }
+
+    const file = req.file;
+    const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      // Remove temporary uploaded file
+      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      res.status(400).json({
+        success: false,
+        error: 'Unsupported file format. Please upload a PDF, JPG, JPEG, or PNG document.',
+      });
+      return;
+    }
+
+    // Process and extract soil report information
+    const extraction = await SoilDocumentParserService.parseDocument(file.path, file.mimetype, file.originalname);
+
+    const fileUrl = `/api/v1/soil-reports/file/${path.basename(file.path)}`;
+
+    res.status(200).json({
+      success: true,
+      fileInfo: {
+        fileName: file.filename,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        fileSize: file.size,
+        fileUrl,
+      },
+      extraction,
+    });
+  } catch (error: any) {
+    console.error('Error in uploadSoilReportDocument:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to process the soil report document.',
+    });
+  }
+};
+
+export const verifyAndSaveSoilReport = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!isDatabaseConnected()) {
       res.status(503).json({ success: false, error: 'Database service is temporarily unavailable.' });
       return;
     }
+
     const {
       farmerId = 'default_farmer',
       farmId = 'default_farm',
+      userId,
+      farmerName,
+      sampleId,
+      labName,
+      sampleDate,
+      reportDate,
+      village,
+      district,
+      state,
+      soilType = 'Unknown',
+      irrigationType = 'Rain-fed',
+      crop,
       ph,
       nitrogen,
       phosphorus,
       potassium,
       organicCarbon,
       electricalConductivity,
-      soilType = 'Unknown',
-      irrigationType = 'Rain-fed',
+      sulfur,
+      zinc,
+      iron,
+      copper,
+      manganese,
+      boron,
       testDate,
-      source = 'manual_entry',
+      source = 'report_upload',
       reportFile,
-      units,
+      extractionConfidence = 100,
     } = req.body;
 
-    // Basic Input Validations
-    if (ph === undefined || ph === null || isNaN(ph) || ph < 0 || ph > 14) {
-      res.status(400).json({ error: 'Valid pH between 0 and 14 is required.' });
+    // Validation
+    const numericPh = Number(ph);
+    if (isNaN(numericPh) || numericPh < 0 || numericPh > 14) {
+      res.status(400).json({ success: false, error: 'Valid pH between 0 and 14 is required.' });
       return;
     }
 
-    if (!nitrogen || nitrogen.value === undefined || isNaN(nitrogen.value)) {
-      res.status(400).json({ error: 'Nitrogen value and unit are required.' });
+    if (!nitrogen || isNaN(Number(nitrogen.value))) {
+      res.status(400).json({ success: false, error: 'Valid Nitrogen (N) value is required.' });
       return;
     }
 
-    if (!phosphorus || phosphorus.value === undefined || isNaN(phosphorus.value)) {
-      res.status(400).json({ error: 'Phosphorus value and unit are required.' });
+    if (!phosphorus || isNaN(Number(phosphorus.value))) {
+      res.status(400).json({ success: false, error: 'Valid Phosphorus (P) value is required.' });
       return;
     }
 
-    if (!potassium || potassium.value === undefined || isNaN(potassium.value)) {
-      res.status(400).json({ error: 'Potassium value and unit are required.' });
+    if (!potassium || isNaN(Number(potassium.value))) {
+      res.status(400).json({ success: false, error: 'Valid Potassium (K) value is required.' });
       return;
     }
 
-    if (!organicCarbon || organicCarbon.value === undefined || isNaN(organicCarbon.value)) {
-      res.status(400).json({ error: 'Organic Carbon value and unit are required.' });
+    if (!organicCarbon || isNaN(Number(organicCarbon.value))) {
+      res.status(400).json({ success: false, error: 'Valid Organic Carbon (OC) value is required.' });
       return;
     }
+
+    // Run scientific interpretation
+    const interpretation = SoilHealthService.interpretSoilHealth({
+      ph: numericPh,
+      nitrogen,
+      phosphorus,
+      potassium,
+      organicCarbon,
+      electricalConductivity,
+      sulfur,
+      zinc,
+      iron,
+      copper,
+      manganese,
+      boron,
+      soilType,
+      irrigationType,
+      crop,
+    });
 
     const report = new SoilReport({
       farmerId,
       farmId,
-      ph: Number(ph),
-      nitrogen: { value: Number(nitrogen.value), unit: String(nitrogen.unit || 'kg/ha') },
-      phosphorus: { value: Number(phosphorus.value), unit: String(phosphorus.unit || 'kg/ha') },
-      potassium: { value: Number(potassium.value), unit: String(potassium.unit || 'kg/ha') },
-      organicCarbon: { value: Number(organicCarbon.value), unit: String(organicCarbon.unit || '%') },
-      electricalConductivity: electricalConductivity
-        ? { value: Number(electricalConductivity.value), unit: String(electricalConductivity.unit || 'dS/m') }
-        : undefined,
+      userId,
+      farmerName,
+      sampleId,
+      labName,
+      sampleDate: sampleDate ? new Date(sampleDate) : undefined,
+      reportDate: reportDate ? new Date(reportDate) : undefined,
+      village,
+      district,
+      state,
       soilType,
       irrigationType,
+      crop,
+      ph: numericPh,
+      nitrogen: {
+        value: Number(nitrogen.value),
+        unit: String(nitrogen.unit || 'kg/ha'),
+        status: nitrogen.status || 'Normal',
+        source: nitrogen.source || source,
+        confidence: nitrogen.confidence || 100,
+      },
+      phosphorus: {
+        value: Number(phosphorus.value),
+        unit: String(phosphorus.unit || 'kg/ha'),
+        status: phosphorus.status || 'Normal',
+        source: phosphorus.source || source,
+        confidence: phosphorus.confidence || 100,
+      },
+      potassium: {
+        value: Number(potassium.value),
+        unit: String(potassium.unit || 'kg/ha'),
+        status: potassium.status || 'Normal',
+        source: potassium.source || source,
+        confidence: potassium.confidence || 100,
+      },
+      organicCarbon: {
+        value: Number(organicCarbon.value),
+        unit: String(organicCarbon.unit || '%'),
+        status: organicCarbon.status || 'Normal',
+        source: organicCarbon.source || source,
+        confidence: organicCarbon.confidence || 100,
+      },
+      electricalConductivity:
+        electricalConductivity && typeof electricalConductivity.value === 'number'
+          ? {
+              value: Number(electricalConductivity.value),
+              unit: String(electricalConductivity.unit || 'dS/m'),
+              status: electricalConductivity.status || 'Normal',
+              source: electricalConductivity.source || source,
+              confidence: electricalConductivity.confidence || 100,
+            }
+          : undefined,
+      sulfur:
+        sulfur && typeof sulfur.value === 'number'
+          ? {
+              value: Number(sulfur.value),
+              unit: String(sulfur.unit || 'ppm'),
+              status: sulfur.status || 'Normal',
+              source: sulfur.source || source,
+              confidence: sulfur.confidence || 100,
+            }
+          : undefined,
+      zinc:
+        zinc && typeof zinc.value === 'number'
+          ? {
+              value: Number(zinc.value),
+              unit: String(zinc.unit || 'ppm'),
+              status: zinc.status || 'Normal',
+              source: zinc.source || source,
+              confidence: zinc.confidence || 100,
+            }
+          : undefined,
+      iron:
+        iron && typeof iron.value === 'number'
+          ? {
+              value: Number(iron.value),
+              unit: String(iron.unit || 'ppm'),
+              status: iron.status || 'Normal',
+              source: iron.source || source,
+              confidence: iron.confidence || 100,
+            }
+          : undefined,
+      copper:
+        copper && typeof copper.value === 'number'
+          ? {
+              value: Number(copper.value),
+              unit: String(copper.unit || 'ppm'),
+              status: copper.status || 'Normal',
+              source: copper.source || source,
+              confidence: copper.confidence || 100,
+            }
+          : undefined,
+      manganese:
+        manganese && typeof manganese.value === 'number'
+          ? {
+              value: Number(manganese.value),
+              unit: String(manganese.unit || 'ppm'),
+              status: manganese.status || 'Normal',
+              source: manganese.source || source,
+              confidence: manganese.confidence || 100,
+            }
+          : undefined,
+      boron:
+        boron && typeof boron.value === 'number'
+          ? {
+              value: Number(boron.value),
+              unit: String(boron.unit || 'ppm'),
+              status: boron.status || 'Normal',
+              source: boron.source || source,
+              confidence: boron.confidence || 100,
+            }
+          : undefined,
       testDate: testDate ? new Date(testDate) : new Date(),
       source,
-      reportFile: reportFile || { storageStatus: 'File storage integration pending' },
-      units: units || { N: nitrogen.unit, P: phosphorus.unit, K: potassium.unit, OC: organicCarbon.unit },
+      isVerified: true,
+      verificationStatus: source === 'manual_entry' ? 'manual_entry' : 'verified',
+      extractionConfidence,
+      overallHealthStatus: interpretation.overallStatus,
+      summaryText: interpretation.summaryExplanation,
+      recommendations: interpretation.practicalGuidance,
+      reportFile,
     });
 
-    const savedReport = await report.save();
-
-    // Interpret soil health
-    const interpretation = SoilHealthService.interpretSoilHealth({
-      ph: savedReport.ph,
-      nitrogen: savedReport.nitrogen,
-      phosphorus: savedReport.phosphorus,
-      potassium: savedReport.potassium,
-      organicCarbon: savedReport.organicCarbon,
-      electricalConductivity: savedReport.electricalConductivity,
-      soilType: savedReport.soilType,
-      irrigationType: savedReport.irrigationType,
-    });
+    const saved = await report.save();
 
     res.status(201).json({
       success: true,
-      report: savedReport,
+      report: saved,
       interpretation,
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message || 'Failed to create soil report' });
+    console.error('Error saving soil report:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to save verified soil report' });
   }
+};
+
+export const createSoilReport = async (req: Request, res: Response): Promise<void> => {
+  return verifyAndSaveSoilReport(req, res);
 };
 
 export const getSoilReportsByFarm = async (req: Request, res: Response): Promise<void> => {
@@ -112,6 +296,12 @@ export const getSoilReportsByFarm = async (req: Request, res: Response): Promise
         potassium: rep.potassium,
         organicCarbon: rep.organicCarbon,
         electricalConductivity: rep.electricalConductivity,
+        sulfur: rep.sulfur,
+        zinc: rep.zinc,
+        iron: rep.iron,
+        copper: rep.copper,
+        manganese: rep.manganese,
+        boron: rep.boron,
         soilType: rep.soilType,
         irrigationType: rep.irrigationType,
       });
@@ -129,6 +319,78 @@ export const getSoilReportsByFarm = async (req: Request, res: Response): Promise
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || 'Failed to fetch soil reports' });
+  }
+};
+
+export const getLatestVerifiedReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!isDatabaseConnected()) {
+      res.status(503).json({ success: false, error: 'Database service is temporarily unavailable.' });
+      return;
+    }
+    const { farmId = 'default_farm' } = req.query;
+    const latest = await SoilReport.findOne({ farmId, isVerified: true }).sort({ testDate: -1, createdAt: -1 });
+
+    if (!latest) {
+      res.status(200).json({ success: true, report: null, message: 'No verified soil report available.' });
+      return;
+    }
+
+    const interpretation = SoilHealthService.interpretSoilHealth({
+      ph: latest.ph,
+      nitrogen: latest.nitrogen,
+      phosphorus: latest.phosphorus,
+      potassium: latest.potassium,
+      organicCarbon: latest.organicCarbon,
+      electricalConductivity: latest.electricalConductivity,
+      sulfur: latest.sulfur,
+      zinc: latest.zinc,
+      iron: latest.iron,
+      copper: latest.copper,
+      manganese: latest.manganese,
+      boron: latest.boron,
+      soilType: latest.soilType,
+      irrigationType: latest.irrigationType,
+    });
+
+    res.status(200).json({
+      success: true,
+      report: latest,
+      interpretation,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch latest soil report' });
+  }
+};
+
+export const getSoilTrends = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!isDatabaseConnected()) {
+      res.status(503).json({ success: false, error: 'Database service is temporarily unavailable.' });
+      return;
+    }
+    const { farmId = 'default_farm' } = req.params;
+    const reports = await SoilReport.find({ farmId, isVerified: true }).sort({ testDate: 1, createdAt: 1 });
+
+    const trends = reports.map((r) => ({
+      id: r._id,
+      testDate: r.testDate,
+      ph: r.ph,
+      oc: r.organicCarbon?.value,
+      n: r.nitrogen?.value,
+      p: r.phosphorus?.value,
+      k: r.potassium?.value,
+      ec: r.electricalConductivity?.value,
+      overallStatus: r.overallHealthStatus || 'BALANCED',
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: trends.length,
+      trends,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch soil trends' });
   }
 };
 
@@ -153,6 +415,12 @@ export const getSoilReportById = async (req: Request, res: Response): Promise<vo
       potassium: report.potassium,
       organicCarbon: report.organicCarbon,
       electricalConductivity: report.electricalConductivity,
+      sulfur: report.sulfur,
+      zinc: report.zinc,
+      iron: report.iron,
+      copper: report.copper,
+      manganese: report.manganese,
+      boron: report.boron,
       soilType: report.soilType,
       irrigationType: report.irrigationType,
     });
@@ -167,6 +435,22 @@ export const getSoilReportById = async (req: Request, res: Response): Promise<vo
   }
 };
 
+export const getSoilReportFile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(process.cwd(), 'uploads', 'soil-reports', path.basename(filename));
+
+    if (!fs.existsSync(filePath)) {
+      res.status(404).json({ success: false, error: 'Report file not found.' });
+      return;
+    }
+
+    res.sendFile(filePath);
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: 'Failed to retrieve report file.' });
+  }
+};
+
 export const deleteSoilReport = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -175,6 +459,18 @@ export const deleteSoilReport = async (req: Request, res: Response): Promise<voi
     if (!deleted) {
       res.status(404).json({ success: false, error: 'Soil report not found' });
       return;
+    }
+
+    // Attempt to remove physical file if exists
+    if (deleted.reportFile?.fileName) {
+      const filePath = path.join(process.cwd(), 'uploads', 'soil-reports', deleted.reportFile.fileName);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (e) {
+          console.warn('Could not delete physical report file:', e);
+        }
+      }
     }
 
     res.status(200).json({ success: true, message: 'Soil report deleted successfully' });

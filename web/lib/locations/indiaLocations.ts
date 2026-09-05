@@ -1042,3 +1042,49 @@ export function searchDistricts(stateName: string, query: string): string[] {
   const q = query.trim().toLowerCase();
   return districts.filter((d) => d.toLowerCase().includes(q));
 }
+
+export interface DistrictEntry {
+  district: string;
+  state: string;
+}
+
+/**
+ * Returns all districts in India with their corresponding State name
+ */
+export function getAllDistrictsWithState(): DistrictEntry[] {
+  const list: DistrictEntry[] = [];
+  for (const item of INDIA_LOCATIONS) {
+    for (const d of item.districts) {
+      list.push({ district: d, state: item.state });
+    }
+  }
+  return list.sort((a, b) => a.district.localeCompare(b.district));
+}
+
+/**
+ * Search all districts across India
+ */
+export function searchAllDistricts(query: string): DistrictEntry[] {
+  const all = getAllDistrictsWithState();
+  if (!query || !query.trim()) return all;
+  const q = query.trim().toLowerCase();
+  return all.filter((entry) => 
+    entry.district.toLowerCase().includes(q) || 
+    entry.state.toLowerCase().includes(q)
+  );
+}
+
+/**
+ * Find State for a given District
+ */
+export function getStateForDistrict(districtName: string): string | null {
+  if (!districtName) return null;
+  const target = districtName.trim().toLowerCase();
+  for (const item of INDIA_LOCATIONS) {
+    if (item.districts.some((d) => d.toLowerCase() === target)) {
+      return item.state;
+    }
+  }
+  return null;
+}
+

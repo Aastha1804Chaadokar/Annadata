@@ -6,7 +6,7 @@ import {
   DocumentUploadExtractionResult,
   SoilTrendPoint,
 } from '@/types/soil';
-import { API_BASE_URL, API_ENDPOINTS } from './apiConfig';
+import { API_ENDPOINTS } from './apiConfig';
 
 const SOIL_REPORTS_STORAGE_KEY = 'annadata_soil_reports';
 

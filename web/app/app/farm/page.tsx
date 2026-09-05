@@ -13,6 +13,7 @@ import { formatCropDisplay } from '@/lib/cropDataset';
 import { AppSidebar } from '@/components/app/AppSidebar';
 import { AppHeader } from '@/components/app/AppHeader';
 import { ProtectedRoute } from '@/components/app/ProtectedRoute';
+import { LocationSelector } from '@/components/ui/LocationSelector';
 import { Button } from '@/components/ui/Button';
 import { API_ENDPOINTS } from '@/lib/apiConfig';
 import {
@@ -207,25 +208,16 @@ function MyFarmContent() {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-bold text-[#285C32] mb-1">State</label>
-                  <input
-                    type="text"
-                    required
-                    value={editData.state}
-                    onChange={(e) => setEditData({ ...editData, state: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-[#3F7D3A]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#285C32] mb-1">District</label>
-                  <input
-                    type="text"
-                    required
-                    value={editData.district}
-                    onChange={(e) => setEditData({ ...editData, district: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-[#3F7D3A]"
+                <div className="md:col-span-2">
+                  <LocationSelector
+                    selectedState={editData.state}
+                    selectedDistrict={editData.district}
+                    onStateChange={(st) => setEditData({ ...editData, state: st, district: '' })}
+                    onDistrictChange={(dist) => setEditData({ ...editData, district: dist })}
+                    stateLabel="State *"
+                    districtLabel="District *"
+                    stateRequired={true}
+                    districtRequired={true}
                   />
                 </div>
 

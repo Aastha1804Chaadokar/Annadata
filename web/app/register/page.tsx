@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { register } from '@/lib/authService';
 import { Button } from '@/components/ui/Button';
-import { INDIAN_STATES } from '@/lib/constants';
+import { LocationSelector } from '@/components/ui/LocationSelector';
 import { 
   Sprout, 
   User, 
@@ -16,9 +16,7 @@ import {
   AlertCircle, 
   Eye, 
   EyeOff, 
-  Globe, 
-  MapPin, 
-  CheckCircle2 
+  Globe 
 } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -30,7 +28,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [language, setLanguage] = useState<string>('hi');
-  const [state, setState] = useState<string>('Madhya Pradesh');
+  const [state, setState] = useState<string>('');
   const [district, setDistrict] = useState<string>('');
   
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -77,6 +75,16 @@ export default function RegisterPage() {
 
     if (cleanPassword !== cleanConfirmPassword) {
       setErrorMessage('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    if (!state.trim()) {
+      setErrorMessage('Please select your state.');
+      return;
+    }
+
+    if (!district.trim()) {
+      setErrorMessage('Please select your district.');
       return;
     }
 
@@ -200,7 +208,7 @@ export default function RegisterPage() {
                     type={showPassword ? 'text' : 'password'}
                     required
                     autoComplete="new-password"
-                    placeholder="Create a password (min 4 chars)"
+                    placeholder="Create password (min 4 chars)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 pr-11 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
@@ -244,77 +252,45 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Row 3: Language & State */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Language */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-[#285C32]">
-                  Preferred Language *
-                </label>
-                <div className="relative">
-                  <Globe className="w-4 h-4 text-[#667267] absolute left-3.5 top-3.5" />
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] bg-white cursor-pointer"
-                  >
-                    <option value="hi">हिन्दी (Hindi)</option>
-                    <option value="en">English</option>
-                    <option value="mr">मराठी (Marathi)</option>
-                    <option value="ta">தமிழ் (Tamil)</option>
-                    <option value="te">తెలుగు (Telugu)</option>
-                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                    <option value="bn">বাংলা (Bengali)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* State */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-[#285C32]">
-                  State *
-                </label>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 text-[#667267] absolute left-3.5 top-3.5" />
-                  <select
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] bg-white cursor-pointer"
-                  >
-                    {INDIAN_STATES.map((st) => (
-                      <option key={st} value={st}>
-                        {st}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* District */}
+            {/* Row 3: Preferred Language */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
-                District
+                Preferred Language *
               </label>
               <div className="relative">
-                <MapPin className="w-4 h-4 text-[#667267] absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  autoComplete="off"
-                  placeholder="e.g. Bhopal, Indore, Nashik, etc."
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
-                />
+                <Globe className="w-4 h-4 text-[#667267] absolute left-3.5 top-3.5" />
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] bg-white cursor-pointer"
+                >
+                  <option value="hi">हिन्दी (Hindi)</option>
+                  <option value="en">English</option>
+                  <option value="mr">मराठी (Marathi)</option>
+                  <option value="ta">தமிழ் (Tamil)</option>
+                  <option value="te">తెలుగు (Telugu)</option>
+                  <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                  <option value="bn">বাংলা (Bengali)</option>
+                </select>
               </div>
             </div>
+
+            {/* Row 4: Searchable State & Dependent District Selector */}
+            <LocationSelector
+              selectedState={state}
+              selectedDistrict={district}
+              onStateChange={setState}
+              onDistrictChange={setDistrict}
+              stateRequired={true}
+              districtRequired={true}
+            />
 
             {/* Submit Button */}
             <Button
               type="submit"
               variant="primary"
               size="md"
-              disabled={isLoading || !name.trim() || !mobile.trim() || !password.trim() || !confirmPassword.trim()}
+              disabled={isLoading || !name.trim() || !mobile.trim() || !password.trim() || !confirmPassword.trim() || !state || !district}
               className="w-full justify-center"
               icon={<ArrowRight className="w-4 h-4" />}
             >

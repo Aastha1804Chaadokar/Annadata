@@ -8,6 +8,7 @@ import { AppSidebar } from '@/components/app/AppSidebar';
 import { AppHeader } from '@/components/app/AppHeader';
 import { ProtectedRoute } from '@/components/app/ProtectedRoute';
 import { Button } from '@/components/ui/Button';
+import { LocationSelector } from '@/components/ui/LocationSelector';
 import { User, MapPin, Phone, Globe, CheckCircle2, Save, Edit3, Shield } from 'lucide-react';
 
 function ProfileContent() {
@@ -109,33 +110,32 @@ function ProfileContent() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-[#173F2A]">State</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editData.state}
-                    onChange={(e) => setEditData({ ...editData, state: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#F7F6F0] border border-stone-300 text-xs font-bold text-[#173F2A]"
+              {isEditing ? (
+                <div className="col-span-1 sm:col-span-2">
+                  <LocationSelector
+                    selectedState={editData.state}
+                    selectedDistrict={editData.district}
+                    onStateChange={(st) => setEditData({ ...editData, state: st, district: '' })}
+                    onDistrictChange={(dt) => setEditData({ ...editData, district: dt })}
+                    stateLabel="State *"
+                    districtLabel="District *"
+                    stateRequired={true}
+                    districtRequired={true}
                   />
-                ) : (
-                  <div className="p-3.5 rounded-xl bg-[#F7F6F0] font-bold text-[#173F2A]">{profile.state}</div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-[#173F2A]">State</label>
+                    <div className="p-3.5 rounded-xl bg-[#F7F6F0] font-bold text-[#173F2A]">{profile.state}</div>
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-[#173F2A]">District</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editData.district}
-                    onChange={(e) => setEditData({ ...editData, district: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#F7F6F0] border border-stone-300 text-xs font-bold text-[#173F2A]"
-                  />
-                ) : (
-                  <div className="p-3.5 rounded-xl bg-[#F7F6F0] font-bold text-[#173F2A]">{profile.district}</div>
-                )}
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-[#173F2A]">District</label>
+                    <div className="p-3.5 rounded-xl bg-[#F7F6F0] font-bold text-[#173F2A]">{profile.district}</div>
+                  </div>
+                </>
+              )}
 
               <div className="space-y-1.5">
                 <label className="font-bold text-[#173F2A]">Village</label>

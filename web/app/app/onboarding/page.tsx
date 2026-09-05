@@ -10,6 +10,7 @@ import { StructuredFarmLocation, GeolocationStatus, ReverseGeocodeResponse } fro
 import { MapPreview } from '@/components/map/MapPreview';
 import { CropSelect } from '@/components/ui/CropSelect';
 import { formatCropDisplay } from '@/lib/cropDataset';
+import { LocationSelector } from '@/components/ui/LocationSelector';
 import { Button } from '@/components/ui/Button';
 import { AppHeader } from '@/components/app/AppHeader';
 import { API_ENDPOINTS } from '@/lib/apiConfig';
@@ -491,59 +492,48 @@ function OnboardingContent() {
                       </button>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="block text-xs font-bold text-[#285C32]">State / राज्य *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Madhya Pradesh"
-                        value={formData.state}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setFormData({
-                            ...formData,
-                            state: val,
-                            structuredLocation: {
-                              ...formData.structuredLocation,
-                              state: val,
-                              village: formData.village,
-                              district: formData.district,
-                              country: 'India',
-                              source: 'manual',
-                            },
-                          });
-                          setIsLocationConfirmed(true);
-                        }}
-                        className="w-full px-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="block text-xs font-bold text-[#285C32]">District / जिला *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Indore"
-                        value={formData.district}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setFormData({
-                            ...formData,
-                            district: val,
-                            structuredLocation: {
-                              ...formData.structuredLocation,
-                              district: val,
-                              village: formData.village,
-                              state: formData.state,
-                              country: 'India',
-                              source: 'manual',
-                            },
-                          });
-                          setIsLocationConfirmed(true);
-                        }}
-                        className="w-full px-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
-                      />
-                    </div>
+                    {/* LocationSelector with dependent state and district dropdowns */}
+                    <LocationSelector
+                      selectedState={formData.state}
+                      selectedDistrict={formData.district}
+                      onStateChange={(st) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          state: st,
+                          district: '',
+                          structuredLocation: {
+                            ...prev.structuredLocation,
+                            state: st,
+                            district: '',
+                            village: prev.village,
+                            country: 'India',
+                            source: 'manual',
+                          },
+                        }));
+                        setIsLocationConfirmed(true);
+                      }}
+                      onDistrictChange={(dist) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          district: dist,
+                          structuredLocation: {
+                            ...prev.structuredLocation,
+                            district: dist,
+                            state: prev.state,
+                            village: prev.village,
+                            country: 'India',
+                            source: 'manual',
+                          },
+                        }));
+                        setIsLocationConfirmed(true);
+                      }}
+                      stateLabel="State / राज्य *"
+                      districtLabel="District / जिला *"
+                      statePlaceholder="Select State"
+                      districtPlaceholder="Select District"
+                      stateRequired={true}
+                      districtRequired={true}
+                    />
 
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-[#285C32]">Village / गाँव *</label>

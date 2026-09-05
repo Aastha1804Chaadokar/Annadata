@@ -16,6 +16,29 @@ export const INDIAN_LANGUAGES: LanguageOption[] = [
   { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ' },
 ];
 
+export const INDIAN_STATES = [
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Uttar Pradesh',
+  'Punjab',
+  'Haryana',
+  'Rajasthan',
+  'Gujarat',
+  'Karnataka',
+  'Tamil Nadu',
+  'Andhra Pradesh',
+  'Telangana',
+  'West Bengal',
+  'Bihar',
+  'Odisha',
+  'Chhattisgarh',
+  'Jharkhand',
+  'Assam',
+  'Kerala',
+  'Himachal Pradesh',
+  'Uttarakhand',
+] as const;
+
 export const DEMO_CROP_RECOMMENDATION = {
   cropName: 'Soybean (सोयाबीन)',
   scientificName: 'Glycine max',

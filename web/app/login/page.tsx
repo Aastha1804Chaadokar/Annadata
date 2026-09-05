@@ -7,35 +7,42 @@ import { useTranslation } from 'react-i18next';
 import { login } from '@/lib/authService';
 import { hasCompletedOnboarding } from '@/lib/farmerService';
 import { Button } from '@/components/ui/Button';
-import { Sprout, Phone, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { Sprout, Phone, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const [mobile, setMobile] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    const cleanMobile = mobile.replace(/\D/g, '').trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanMobile) {
+      setErrorMessage('Please enter your mobile number.');
+      return;
+    }
+
+    if (cleanMobile.length !== 10) {
+      setErrorMessage('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    if (!cleanPassword) {
+      setErrorMessage('Please enter your password.');
+      return;
+    }
+
     setIsLoading(true);
 
-    const cleanMobile = mobile.trim();
-    if (!cleanMobile || cleanMobile.length < 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!password.trim()) {
-      setErrorMessage('Please enter your password.');
-      setIsLoading(false);
-      return;
-    }
-
-    const res = await login(cleanMobile, password);
+    const res = await login(cleanMobile, cleanPassword);
 
     if (res.success) {
       if (hasCompletedOnboarding()) {
@@ -44,7 +51,7 @@ export default function LoginPage() {
         router.replace('/app/onboarding');
       }
     } else {
-      setErrorMessage(res.error || 'Login failed. Please check your mobile number and password.');
+      setErrorMessage(res.error || 'Invalid mobile number or password.');
       setIsLoading(false);
     }
   };
@@ -81,6 +88,7 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Mobile Number Field */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
                 {t('auth.mobileNumber', 'Mobile Number')} *
@@ -100,6 +108,7 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Password Field with Show/Hide Toggle */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#285C32]">
                 {t('auth.password', 'Password')} *
@@ -107,17 +116,26 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="w-4 h-4 text-[#667267] absolute left-3.5 top-3.5" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   autoComplete="new-password"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
+                  className="w-full pl-10 pr-11 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3.5 text-[#667267] hover:text-[#285C32] focus:outline-none"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
+            {/* Submit Button */}
             <Button
               type="submit"
               variant="primary"
@@ -129,6 +147,7 @@ export default function LoginPage() {
               {isLoading ? t('common.loading', 'Logging in...') : t('navbar.login', 'Login')}
             </Button>
 
+            {/* Bottom Register Prompt */}
             <div className="pt-4 border-t border-stone-100 text-center text-xs text-[#667267]">
               <span>{t('auth.noAccount', "Don't have an account?")} </span>
               <Link href="/register" className="font-bold text-[#3F7D3A] hover:underline">

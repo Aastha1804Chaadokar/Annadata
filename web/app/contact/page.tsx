@@ -101,7 +101,7 @@ export default function ContactPage() {
                       <label className="text-xs font-bold text-[#173F2A]">Mobile Number</label>
                       <input
                         type="tel"
-                        placeholder="e.g. 9876543210"
+                        placeholder="Enter 10-digit mobile number"
                         className="w-full px-4 py-3 rounded-2xl bg-[#F7F6F0] border border-stone-200 text-xs text-[#173F2A] focus:outline-none focus:ring-2 focus:ring-[#3F7D3A]"
                       />
                     </div>

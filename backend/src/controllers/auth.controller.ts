@@ -1,37 +1,61 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { isDatabaseConnected } from '../db/connection.js';
 
 export async function registerUser(req: Request, res: Response) {
   try {
-    const { name, mobile, password } = req.body;
+    const { name, mobile, password, language, state, district } = req.body;
 
-    if (!name || !mobile || !password) {
+    const cleanName = typeof name === 'string' ? name.trim() : '';
+    const cleanMobile = typeof mobile === 'string' ? mobile.replace(/\D/g, '') : '';
+    const cleanPassword = typeof password === 'string' ? password.trim() : '';
+
+    if (!cleanName || !cleanMobile || !cleanPassword) {
       return res.status(400).json({
         success: false,
-        error: 'Name, mobile number, and password are required.',
+        error: 'Full name, 10-digit mobile number, and password are required.',
+      });
+    }
+
+    if (cleanMobile.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please enter a valid 10-digit Indian mobile number.',
+      });
+    }
+
+    if (cleanPassword.length < 4) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 4 characters.',
       });
     }
 
     if (!isDatabaseConnected()) {
       return res.status(503).json({
         success: false,
-        error: 'Database service is temporarily unavailable.',
+        error: 'Database service is temporarily unavailable. Please try again.',
       });
     }
 
-    const existingUser = await User.findOne({ mobile });
+    const existingUser = await User.findOne({ mobile: cleanMobile });
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
         error: 'An account with this mobile number already exists. Please login.',
       });
     }
 
+    const hashedPassword = await bcrypt.hash(cleanPassword, 10);
+
     const user = await User.create({
-      name,
-      mobile,
-      password, // Stored as registered password
+      name: cleanName,
+      mobile: cleanMobile,
+      password: hashedPassword,
+      language: language || 'hi',
+      state: state || '',
+      district: district || '',
     });
 
     const token = `token_${user._id}_${Date.now()}`;
@@ -45,6 +69,9 @@ export async function registerUser(req: Request, res: Response) {
           id: user._id,
           name: user.name,
           mobile: user.mobile,
+          language: user.language,
+          state: user.state,
+          district: user.district,
         },
       },
     });
@@ -62,7 +89,7 @@ export async function registerUser(req: Request, res: Response) {
     }
     return res.status(500).json({
       success: false,
-      error: error.message || 'Registration failed.',
+      error: 'Registration failed. Please try again.',
     });
   }
 }
@@ -71,7 +98,10 @@ export async function loginUser(req: Request, res: Response) {
   try {
     const { mobile, password } = req.body;
 
-    if (!mobile || !password) {
+    const cleanMobile = typeof mobile === 'string' ? mobile.replace(/\D/g, '') : '';
+    const cleanPassword = typeof password === 'string' ? password.trim() : '';
+
+    if (!cleanMobile || !cleanPassword) {
       return res.status(400).json({
         success: false,
         error: 'Mobile number and password are required.',
@@ -81,30 +111,35 @@ export async function loginUser(req: Request, res: Response) {
     if (!isDatabaseConnected()) {
       return res.status(503).json({
         success: false,
-        error: 'Database service is temporarily unavailable.',
+        error: 'Database service is temporarily unavailable. Please try again.',
       });
     }
 
-    let user = await User.findOne({ mobile });
+    const user = await User.findOne({ mobile: cleanMobile });
 
-    // For default farmer demo mobile numbers, create demo account if missing
-    if (!user && (mobile === '9876543210' || mobile === '9999999999')) {
-      user = await User.create({
-        name: 'Ram Singh',
-        mobile,
-        password: password || '123456',
-      });
-    }
-
-    if (!user) {
+    if (!user || !user.password) {
       return res.status(401).json({
         success: false,
         error: 'Invalid mobile number or password.',
       });
     }
 
-    // Check password if present
-    if (user.password && user.password !== password && password !== '123456') {
+    // Verify password using bcrypt
+    let isMatch = false;
+    try {
+      isMatch = await bcrypt.compare(cleanPassword, user.password);
+    } catch {
+      isMatch = false;
+    }
+
+    // Support automatic migration if a legacy plaintext password existed
+    if (!isMatch && user.password === cleanPassword) {
+      isMatch = true;
+      user.password = await bcrypt.hash(cleanPassword, 10);
+      await user.save();
+    }
+
+    if (!isMatch) {
       return res.status(401).json({
         success: false,
         error: 'Invalid mobile number or password.',
@@ -122,6 +157,9 @@ export async function loginUser(req: Request, res: Response) {
           id: user._id,
           name: user.name,
           mobile: user.mobile,
+          language: user.language,
+          state: user.state,
+          district: user.district,
         },
       },
     });
@@ -139,23 +177,22 @@ export async function loginUser(req: Request, res: Response) {
     }
     return res.status(500).json({
       success: false,
-      error: error.message || 'Login failed.',
+      error: 'Login failed. Please check your credentials.',
     });
   }
 }
 
 export async function logoutUser(req: Request, res: Response) {
   try {
-    // Clear session cookies or invalidate backend auth state
     res.clearCookie('annadata_session');
     return res.status(200).json({
       success: true,
       message: 'Logged out successfully from Annadata session.',
     });
-  } catch (error: any) {
+  } catch {
     return res.status(500).json({
       success: false,
-      error: error.message || 'Logout failed.',
+      error: 'Logout failed.',
     });
   }
 }
@@ -164,10 +201,9 @@ export async function getCurrentUser(req: Request, res: Response) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json({ success: false, error: 'Unauthorized session.' });
+      return res.status(401).json({ success: false, error: 'Unauthorized session. Please login.' });
     }
 
-    // Extract user token
     const token = authHeader.replace('Bearer ', '');
     const parts = token.split('_');
     if (parts.length >= 2) {
@@ -182,6 +218,9 @@ export async function getCurrentUser(req: Request, res: Response) {
                 id: user._id,
                 name: user.name,
                 mobile: user.mobile,
+                language: user.language,
+                state: user.state,
+                district: user.district,
               },
             },
           });
@@ -189,20 +228,14 @@ export async function getCurrentUser(req: Request, res: Response) {
       }
     }
 
-    return res.status(200).json({
-      success: true,
-      data: {
-        user: {
-          name: 'Ram Singh',
-          mobile: '9876543210',
-        },
-      },
+    return res.status(401).json({
+      success: false,
+      error: 'Session expired or invalid. Please login again.',
     });
-  } catch (error: any) {
+  } catch {
     return res.status(500).json({
       success: false,
-      error: error.message || 'Session lookup failed.',
+      error: 'Session lookup failed.',
     });
   }
 }
-

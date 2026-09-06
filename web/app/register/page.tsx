@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { register } from '@/lib/authService';
+import { register, normalizeIndianMobile } from '@/lib/authService';
 import { Button } from '@/components/ui/Button';
 import { LocationSelector } from '@/components/ui/LocationSelector';
 import { 
@@ -44,7 +44,7 @@ export default function RegisterPage() {
     setIsDuplicateAccount(false);
 
     const cleanName = name.trim();
-    const cleanMobile = mobile.replace(/\D/g, '').trim();
+    const cleanMobile = normalizeIndianMobile(mobile);
     const cleanPassword = password.trim();
     const cleanConfirmPassword = confirmPassword.trim();
 
@@ -59,7 +59,7 @@ export default function RegisterPage() {
     }
 
     if (cleanMobile.length !== 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number.');
+      setErrorMessage('Please enter a valid 10-digit Indian mobile number.');
       return;
     }
 
@@ -184,11 +184,11 @@ export default function RegisterPage() {
                   <input
                     type="tel"
                     required
-                    autoComplete="off"
-                    placeholder="Enter 10-digit mobile number"
+                    autoComplete="tel"
+                    placeholder="Enter 10-digit mobile number (e.g. 9876543210)"
                     value={mobile}
-                    maxLength={10}
-                    onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+                    maxLength={16}
+                    onChange={(e) => setMobile(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
                   />
                 </div>

@@ -22,36 +22,37 @@ app.use(
 );
 
 // Dynamic CORS configuration for Vercel, Render, Localhost, and custom domains
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
-      if (!origin) return callback(null, true);
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
 
-      // If wildcard or default
-      if (env.CORS_ORIGIN === '*' || env.CORS_ORIGIN === 'all') {
-        return callback(null, true);
-      }
-
-      // Check configured origins
-      const allowedOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.includes('localhost') ||
-        origin.includes('127.0.0.1') ||
-        origin.endsWith('.vercel.app') ||
-        origin.endsWith('.onrender.com')
-      ) {
-        return callback(null, true);
-      }
-
+    // If wildcard or default
+    if (env.CORS_ORIGIN === '*' || env.CORS_ORIGIN === 'all') {
       return callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  })
-);
+    }
+
+    // Check configured origins
+    const allowedOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com')
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

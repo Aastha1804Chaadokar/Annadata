@@ -44,28 +44,49 @@ export const getAuthToken = (): string | null => {
   return localStorage.getItem(SESSION_TOKEN_KEY);
 };
 
+export const normalizeIndianMobile = (mobile: string): string => {
+  let clean = mobile.replace(/\D/g, '').trim();
+  if (clean.length === 12 && clean.startsWith('91')) {
+    clean = clean.slice(2);
+  } else if (clean.length === 11 && clean.startsWith('0')) {
+    clean = clean.slice(1);
+  }
+  return clean;
+};
+
 export const login = async (mobile: string, password: string): Promise<AuthResponse> => {
-  const cleanMobile = mobile.replace(/\D/g, '').trim();
+  const cleanMobile = normalizeIndianMobile(mobile);
   const cleanPassword = password.trim();
 
   if (!cleanMobile || cleanMobile.length !== 10) {
-    return { success: false, error: 'Please enter a valid 10-digit mobile number.' };
+    return { success: false, error: 'Please enter a valid 10-digit Indian mobile number.' };
   }
 
   if (!cleanPassword) {
     return { success: false, error: 'Please enter your password.' };
   }
 
+  const endpoint = API_ENDPOINTS.AUTH_LOGIN;
+
   try {
-    const response = await fetch(API_ENDPOINTS.AUTH_LOGIN, {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 18000);
+
+    const response = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body: JSON.stringify({ mobile: cleanMobile, password: cleanPassword }),
+      signal: controller.signal,
     });
 
-    const data = await response.json();
+    clearTimeout(timeoutId);
 
-    if (response.ok && data.success && data.data?.token) {
+    const data = await response.json().catch(() => null);
+
+    if (response.ok && data?.success && data?.data?.token) {
       localStorage.setItem(SESSION_TOKEN_KEY, data.data.token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.data.user));
       return { success: true, message: data.message, data: data.data };
@@ -73,12 +94,18 @@ export const login = async (mobile: string, password: string): Promise<AuthRespo
 
     return {
       success: false,
-      error: data.error || 'Invalid mobile number or password.',
+      error: data?.error || 'Invalid mobile number or password.',
     };
-  } catch {
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      return {
+        success: false,
+        error: 'Authentication request timed out. The server may be waking up, please try again in a few seconds.',
+      };
+    }
     return {
       success: false,
-      error: 'Unable to connect to authentication server. Please try again.',
+      error: 'Unable to connect to authentication server. Please check your internet connection or try again.',
     };
   }
 };
@@ -90,7 +117,7 @@ export const register = async (
   extraFields?: { language?: string; state?: string; district?: string }
 ): Promise<AuthResponse> => {
   const cleanName = name.trim();
-  const cleanMobile = mobile.replace(/\D/g, '').trim();
+  const cleanMobile = normalizeIndianMobile(mobile);
   const cleanPassword = password.trim();
 
   if (!cleanName) {
@@ -98,17 +125,25 @@ export const register = async (
   }
 
   if (!cleanMobile || cleanMobile.length !== 10) {
-    return { success: false, error: 'Please enter a valid 10-digit mobile number.' };
+    return { success: false, error: 'Please enter a valid 10-digit Indian mobile number.' };
   }
 
   if (!cleanPassword || cleanPassword.length < 4) {
     return { success: false, error: 'Please create a password with at least 4 characters.' };
   }
 
+  const endpoint = API_ENDPOINTS.AUTH_REGISTER;
+
   try {
-    const response = await fetch(API_ENDPOINTS.AUTH_REGISTER, {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 18000);
+
+    const response = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body: JSON.stringify({
         name: cleanName,
         mobile: cleanMobile,
@@ -117,11 +152,14 @@ export const register = async (
         state: extraFields?.state || '',
         district: extraFields?.district || '',
       }),
+      signal: controller.signal,
     });
 
-    const data = await response.json();
+    clearTimeout(timeoutId);
 
-    if (response.ok && data.success && data.data?.token) {
+    const data = await response.json().catch(() => null);
+
+    if (response.ok && data?.success && data?.data?.token) {
       localStorage.setItem(SESSION_TOKEN_KEY, data.data.token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.data.user));
       return { success: true, message: data.message, data: data.data };
@@ -129,12 +167,18 @@ export const register = async (
 
     return {
       success: false,
-      error: data.error || 'Registration failed. Please try again.',
+      error: data?.error || 'Registration failed. Please try again.',
     };
-  } catch {
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      return {
+        success: false,
+        error: 'Registration request timed out. The server may be waking up, please try again.',
+      };
+    }
     return {
       success: false,
-      error: 'Unable to connect to authentication server. Please try again.',
+      error: 'Unable to connect to authentication server. Please check your internet connection or try again.',
     };
   }
 };

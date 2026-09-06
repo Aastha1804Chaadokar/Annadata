@@ -8,8 +8,14 @@ export async function registerUser(req: Request, res: Response) {
     const { name, mobile, password, language, state, district } = req.body;
 
     const cleanName = typeof name === 'string' ? name.trim() : '';
-    const cleanMobile = typeof mobile === 'string' ? mobile.replace(/\D/g, '') : '';
+    let cleanMobile = typeof mobile === 'string' ? mobile.replace(/\D/g, '').trim() : '';
     const cleanPassword = typeof password === 'string' ? password.trim() : '';
+
+    if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+      cleanMobile = cleanMobile.slice(2);
+    } else if (cleanMobile.length === 11 && cleanMobile.startsWith('0')) {
+      cleanMobile = cleanMobile.slice(1);
+    }
 
     if (!cleanName || !cleanMobile || !cleanPassword) {
       return res.status(400).json({
@@ -98,8 +104,14 @@ export async function loginUser(req: Request, res: Response) {
   try {
     const { mobile, password } = req.body;
 
-    const cleanMobile = typeof mobile === 'string' ? mobile.replace(/\D/g, '') : '';
+    let cleanMobile = typeof mobile === 'string' ? mobile.replace(/\D/g, '').trim() : '';
     const cleanPassword = typeof password === 'string' ? password.trim() : '';
+
+    if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+      cleanMobile = cleanMobile.slice(2);
+    } else if (cleanMobile.length === 11 && cleanMobile.startsWith('0')) {
+      cleanMobile = cleanMobile.slice(1);
+    }
 
     if (!cleanMobile || !cleanPassword) {
       return res.status(400).json({
@@ -120,7 +132,7 @@ export async function loginUser(req: Request, res: Response) {
     if (!user || !user.password) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid mobile number or password.',
+        error: 'No account found with this mobile number. Please register or check your number.',
       });
     }
 
@@ -142,7 +154,7 @@ export async function loginUser(req: Request, res: Response) {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid mobile number or password.',
+        error: 'Incorrect password. Please verify your password.',
       });
     }
 

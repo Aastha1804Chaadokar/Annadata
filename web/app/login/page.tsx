@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { login } from '@/lib/authService';
+import { login, normalizeIndianMobile } from '@/lib/authService';
 import { hasCompletedOnboarding } from '@/lib/farmerService';
 import { Button } from '@/components/ui/Button';
 import { Sprout, Phone, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
@@ -22,7 +22,7 @@ export default function LoginPage() {
     e.preventDefault();
     setErrorMessage(null);
 
-    const cleanMobile = mobile.replace(/\D/g, '').trim();
+    const cleanMobile = normalizeIndianMobile(mobile);
     const cleanPassword = password.trim();
 
     if (!cleanMobile) {
@@ -31,7 +31,7 @@ export default function LoginPage() {
     }
 
     if (cleanMobile.length !== 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number.');
+      setErrorMessage('Please enter a valid 10-digit Indian mobile number.');
       return;
     }
 
@@ -98,11 +98,11 @@ export default function LoginPage() {
                 <input
                   type="tel"
                   required
-                  autoComplete="off"
-                  placeholder="Enter 10-digit mobile number"
+                  autoComplete="tel"
+                  placeholder="Enter 10-digit mobile number (e.g. 9876543210)"
                   value={mobile}
-                  maxLength={10}
-                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+                  maxLength={16}
+                  onChange={(e) => setMobile(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#D7E4D1] text-sm focus:outline-none focus:ring-2 focus:ring-[#3F7D3A] text-[#173F2A] placeholder:text-stone-400"
                 />
               </div>

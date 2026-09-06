@@ -6,8 +6,13 @@
 const getApiBaseUrl = (): string => {
   // 1. If explicitly configured via environment variable (e.g. on Vercel / Render)
   if (process.env.NEXT_PUBLIC_API_URL) {
-    const configured = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
-    if (configured) return configured;
+    let configured = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    if (configured) {
+      if (!configured.endsWith('/api/v1') && !configured.endsWith('/api')) {
+        configured = `${configured}/api/v1`;
+      }
+      return configured;
+    }
   }
 
   // 2. In browser, dynamically resolve based on the active environment

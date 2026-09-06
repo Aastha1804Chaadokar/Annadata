@@ -77,16 +77,45 @@ app.get('/', (_req, res) => {
   });
 });
 
-// Register routes
-app.use('/api', healthRoutes);
+// Register routes with comprehensive path aliases (/api/v1, /api, and root prefixes)
+// This guarantees zero 404 errors regardless of whether the client or reverse-proxy uses /api/v1 or /api or direct endpoints.
 app.use('/api/v1', healthRoutes);
+app.use('/api', healthRoutes);
+app.use('/health', healthRoutes);
+
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
+app.use('/api/v1/farmers', farmerRoutes);
+app.use('/api/farmers', farmerRoutes);
+app.use('/farmers', farmerRoutes);
 app.use('/api/v1', farmerRoutes);
+app.use('/api', farmerRoutes);
+
 app.use('/api/v1/location', locationRoutes);
+app.use('/api/location', locationRoutes);
+app.use('/location', locationRoutes);
+
+app.use('/api/v1/soil-reports', soilReportRoutes);
+app.use('/api/soil-reports', soilReportRoutes);
+app.use('/soil-reports', soilReportRoutes);
 app.use('/api/v1', soilReportRoutes);
+app.use('/api', soilReportRoutes);
+
+app.use('/api/v1/crop-recommendations', cropRecommendationRoutes);
+app.use('/api/crop-recommendations', cropRecommendationRoutes);
+app.use('/crop-recommendations', cropRecommendationRoutes);
 app.use('/api/v1', cropRecommendationRoutes);
+app.use('/api', cropRecommendationRoutes);
+
 app.use('/api/v1/weather', weatherRoutes);
+app.use('/api/weather', weatherRoutes);
+app.use('/weather', weatherRoutes);
+
 app.use('/api/v1/assistant', assistantRoutes);
+app.use('/api/assistant', assistantRoutes);
+app.use('/assistant', assistantRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

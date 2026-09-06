@@ -5,9 +5,17 @@ import { isDatabaseConnected } from '../db/connection.js';
 
 export async function registerUser(req: Request, res: Response) {
   try {
-    const { name, mobile, phone, password, language, state, district } = req.body;
+    const { name, mobile, phone, password, language, state, district, village, email } = req.body;
     const rawMobile = mobile || phone || '';
 
+    console.log('[AUTH] Registration request received:', {
+      name: name ? `${name.substring(0, 1)}***` : 'missing',
+      mobileLength: rawMobile ? rawMobile.length : 0,
+      state: state || 'N/A',
+      district: district || 'N/A',
+    });
+
+    console.log('[AUTH] Validating registration data...');
     const cleanName = typeof name === 'string' ? name.trim() : '';
     let cleanMobile = typeof rawMobile === 'string' ? rawMobile.replace(/\D/g, '').trim() : '';
     const cleanPassword = typeof password === 'string' ? password.trim() : '';
@@ -19,6 +27,7 @@ export async function registerUser(req: Request, res: Response) {
     }
 
     if (!cleanName || !cleanMobile || !cleanPassword) {
+      console.warn('[AUTH] Validation failed: missing required fields');
       return res.status(400).json({
         success: false,
         error: 'Full name, 10-digit mobile number, and password are required.',
@@ -26,6 +35,7 @@ export async function registerUser(req: Request, res: Response) {
     }
 
     if (cleanMobile.length !== 10) {
+      console.warn('[AUTH] Validation failed: invalid mobile number length', cleanMobile.length);
       return res.status(400).json({
         success: false,
         error: 'Please enter a valid 10-digit Indian mobile number.',
@@ -33,6 +43,7 @@ export async function registerUser(req: Request, res: Response) {
     }
 
     if (cleanPassword.length < 4) {
+      console.warn('[AUTH] Validation failed: password too short');
       return res.status(400).json({
         success: false,
         error: 'Password must be at least 4 characters.',
@@ -40,20 +51,24 @@ export async function registerUser(req: Request, res: Response) {
     }
 
     if (!isDatabaseConnected()) {
+      console.error('[AUTH] MongoDB connection is not active');
       return res.status(503).json({
         success: false,
         error: 'Database service is temporarily unavailable. Please try again.',
       });
     }
 
+    console.log('[AUTH] Checking existing user for mobile ending in ***', cleanMobile.slice(-4));
     const existingUser = await User.findOne({ mobile: cleanMobile });
     if (existingUser) {
+      console.warn('[AUTH] Duplicate registration attempt for mobile ending in ***', cleanMobile.slice(-4));
       return res.status(409).json({
         success: false,
         error: 'An account with this mobile number already exists. Please login.',
       });
     }
 
+    console.log('[AUTH] Hashing password and creating user in MongoDB...');
     const hashedPassword = await bcrypt.hash(cleanPassword, 10);
 
     const user = await User.create({
@@ -66,6 +81,7 @@ export async function registerUser(req: Request, res: Response) {
     });
 
     const token = `token_${user._id}_${Date.now()}`;
+    console.log('[AUTH] Registration successful. User ID created:', user._id.toString());
 
     return res.status(201).json({
       success: true,
@@ -83,6 +99,7 @@ export async function registerUser(req: Request, res: Response) {
       },
     });
   } catch (error: any) {
+    console.error('[AUTH] Error during registration:', error.message);
     if (
       error.name === 'MongooseError' ||
       error.name === 'MongoServerSelectionError' ||

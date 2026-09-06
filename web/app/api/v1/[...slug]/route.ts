@@ -7,11 +7,17 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 
 const getBackendTargetUrl = (): string => {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
-  }
-  if (process.env.API_URL) {
-    return process.env.API_URL.replace(/\/+$/, '');
+  let url = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
+  if (url) {
+    url = url.replace(/\/+$/, '');
+    if (!url.endsWith('/api/v1')) {
+      if (url.endsWith('/api')) {
+        url = `${url}/v1`;
+      } else {
+        url = `${url}/api/v1`;
+      }
+    }
+    return url;
   }
   // When deployed on Vercel without explicit env var, default to production Render URL
   if (process.env.VERCEL || process.env.VERCEL_ENV) {

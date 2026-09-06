@@ -14,13 +14,13 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="home"
-      className="relative min-h-[88vh] sm:min-h-[92vh] w-full flex flex-col justify-between overflow-hidden bg-[#173F2A] text-white"
+      className="relative min-h-[85vh] sm:min-h-[90vh] w-full flex flex-col justify-between overflow-hidden bg-[#173F2A] text-white"
     >
-      {/* Background Image with Dark Editorial Overlays */}
+      {/* 1. Large Real Agricultural Photography with Subtle Dark Editorial Overlay */}
       <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
         <Image
           src="/assets/hero-farm.jpg"
-          alt="Indian agricultural farmland"
+          alt="Indian agricultural farmland at sunrise"
           fill
           priority
           sizes="100vw"
@@ -31,10 +31,10 @@ export const Hero: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-[#173F2A] via-transparent to-black/60" />
       </div>
 
-      {/* Spacer for Top Navbar */}
+      {/* Spacer for Floating Fixed Navbar */}
       <div className="h-24 sm:h-28" />
 
-      {/* Main Hero Content */}
+      {/* 2. Main Hero Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 py-6 my-auto">
         <div className="max-w-3xl space-y-5 text-left">
           
@@ -49,26 +49,26 @@ export const Hero: React.FC = () => {
             <span>{t('hero.eyebrow', 'ANNADATA')}</span>
           </motion.div>
 
-          {/* Main Hero Heading */}
+          {/* Large Hero Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-[68px] font-black tracking-tight text-white leading-[1.06] drop-shadow-md"
+            className="text-4xl sm:text-6xl lg:text-[70px] font-black tracking-tight text-white leading-[1.05] drop-shadow-md"
           >
             Har Kisan,<br />
             Har Fasal,<br />
             <span className="text-[#D8B45A]">Har Faisla.</span>
           </motion.h1>
 
-          {/* Smaller Supporting Line */}
+          {/* Supporting Headline */}
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-xl sm:text-2xl font-bold text-white/95 tracking-tight drop-shadow-sm"
           >
-            {t('hero.supportingLine', 'Smarter agriculture for India.')}
+            {t('hero.supportingLine', 'Smarter Agriculture for India')}
           </motion.h2>
 
           {/* Short Description */}
@@ -80,7 +80,7 @@ export const Hero: React.FC = () => {
           >
             {t(
               'hero.description',
-              'Helping Indian farmers make better decisions from planning to harvest.'
+              'Helping farmers make better decisions from the first seed to the final harvest.'
             )}
           </motion.p>
 
@@ -89,10 +89,10 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="pt-3 flex flex-wrap items-center gap-3.5"
+            className="pt-2 flex flex-wrap items-center gap-3.5"
           >
             <Link href="/register">
-              <Button variant="accent" size="lg" className="shadow-xl" icon={<ArrowRight className="w-4 h-4" />}>
+              <Button variant="accent" size="lg" className="shadow-xl px-7" icon={<ArrowRight className="w-4 h-4" />}>
                 {t('hero.getStarted', 'Get Started')}
               </Button>
             </Link>
@@ -105,7 +105,7 @@ export const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Info Strip */}
+      {/* 3. Bottom Information Strip */}
       <div className="z-10 border-t border-white/15 bg-black/40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-white/90">
           <div className="flex items-center gap-4">
@@ -114,7 +114,7 @@ export const Hero: React.FC = () => {
               <strong className="text-white uppercase tracking-wider font-black">INDIA</strong>
             </div>
             <span className="text-white/40 hidden sm:inline">•</span>
-            <span className="font-medium text-white/90">Smart Farming Platform</span>
+            <span className="font-medium text-white/90">Decision-Support Platform for Indian Agriculture</span>
           </div>
 
           <div className="flex items-center gap-3">

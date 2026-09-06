@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Hero } from '@/components/hero/Hero';
-import { SmarterAgricultureSection } from '@/components/sections/SmarterAgricultureSection';
+import { IdeaSection } from '@/components/sections/IdeaSection';
 import { FarmerUncertaintiesSection } from '@/components/sections/FarmerUncertaintiesSection';
 import { HarvestLifecycleSection } from '@/components/sections/HarvestLifecycleSection';
 import { AnnadataValueSection } from '@/components/sections/AnnadataValueSection';
@@ -10,23 +10,23 @@ import { ShortCTASection } from '@/components/sections/ShortCTASection';
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#F4F6EE] text-[#17201A] selection:bg-[#D8B45A]/30 selection:text-[#173F2A]">
-      {/* 1. Short Hero: Har Kisan, Har Fasal, Har Faisla */}
+    <main className="min-h-screen bg-[#F7F6F0] text-[#17201A] selection:bg-[#D8B45A]/30 selection:text-[#173F2A]">
+      {/* 1. Hero: Har Kisan, Har Fasal, Har Faisla & Smarter Agriculture for India */}
       <Hero />
 
-      {/* 2. Smarter Agriculture For India */}
-      <SmarterAgricultureSection />
+      {/* 2. The Annadata Idea: Built Around the Farmer's Journey + Large Real Photo */}
+      <IdeaSection />
 
-      {/* 3. Farmer Uncertainties: Every Harvest Comes With Uncertainty */}
+      {/* 3. Farmer Uncertainties: Every Harvest Comes With Uncertainty + Real Photo + Cards */}
       <FarmerUncertaintiesSection />
 
-      {/* 4. Harvest Lifecycle: From Seed to Harvest (PLAN → SOW → GROW → PROTECT → HARVEST → SELL) */}
+      {/* 4. Harvest Lifecycle: From Seed to Harvest (PLAN → SOW → GROW → PROTECT → HARVEST → SELL) + Real Photos */}
       <HarvestLifecycleSection />
 
-      {/* 5. Annadata Features: Small Feature Row/Grid */}
+      {/* 5. Annadata Value: One Platform. Every Farming Decision. */}
       <AnnadataValueSection />
 
-      {/* 6. Bottom CTA: Make Your Next Farming Decision Smarter. */}
+      {/* 6. Short CTA: Make Your Next Farming Decision Smarter. */}
       <ShortCTASection />
     </main>
   );

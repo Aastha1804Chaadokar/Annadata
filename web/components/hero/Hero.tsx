@@ -55,7 +55,7 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-[76px] font-black tracking-tight text-white leading-[1.04] drop-shadow-md"
+            className="text-4xl sm:text-6xl lg:text-[72px] font-black tracking-tight text-white leading-[1.04] drop-shadow-md"
           >
             Har Kisan,<br />
             Har Fasal,<br />
@@ -67,39 +67,26 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl sm:text-2xl font-bold text-white/95 tracking-tight drop-shadow-sm"
+            className="text-lg sm:text-2xl font-bold text-white/95 tracking-tight drop-shadow-sm max-w-2xl leading-snug"
           >
-            {t('hero.supporting', 'Smarter decisions for every Indian farmer.')}
+            {t('hero.supporting', 'Helping Indian farmers make smarter decisions through every stage of the harvest lifecycle.')}
           </motion.h2>
-
-          {/* Body Paragraph */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-sm sm:text-base text-white/85 max-w-2xl leading-relaxed font-normal"
-          >
-            {t(
-              'hero.body',
-              'From farm location and soil health to crop recommendations and agricultural insights — Annadata brings practical technology closer to every farmer.'
-            )}
-          </motion.p>
 
           {/* CTA Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="pt-4 flex flex-wrap items-center gap-4"
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="pt-3 flex flex-wrap items-center gap-4"
           >
-            <Link href="/app/onboarding">
+            <Link href="/register">
               <Button variant="accent" size="lg" className="shadow-xl" icon={<ArrowRight className="w-4 h-4" />}>
                 {t('hero.getStarted', 'Get Started')}
               </Button>
             </Link>
-            <Link href="/features">
+            <Link href="/how-it-works">
               <Button variant="outline" size="lg" className="border-white/40 text-white hover:bg-white/10 shadow-md" icon={<Sparkles className="w-4 h-4 text-[#D8B45A]" />}>
-                {t('hero.explore', 'Explore Annadata')}
+                {t('hero.explore', 'How It Works')}
               </Button>
             </Link>
           </motion.div>

@@ -70,7 +70,7 @@ export const login = async (mobile: string, password: string): Promise<AuthRespo
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 18000);
+    const timeoutId = setTimeout(() => controller.abort(), 35000);
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -92,6 +92,20 @@ export const login = async (mobile: string, password: string): Promise<AuthRespo
       return { success: true, message: data.message, data: data.data };
     }
 
+    if (response.status === 401) {
+      return {
+        success: false,
+        error: data?.error || 'Invalid mobile number or password.',
+      };
+    }
+
+    if (response.status === 503) {
+      return {
+        success: false,
+        error: data?.error || 'Database service is temporarily warming up. Please try again in a moment.',
+      };
+    }
+
     return {
       success: false,
       error: data?.error || 'Invalid mobile number or password.',
@@ -100,12 +114,12 @@ export const login = async (mobile: string, password: string): Promise<AuthRespo
     if (err.name === 'AbortError') {
       return {
         success: false,
-        error: 'Authentication request timed out. The server may be waking up, please try again in a few seconds.',
+        error: 'Authentication request timed out. The server may be waking up from cold start, please try again.',
       };
     }
     return {
       success: false,
-      error: 'Unable to connect to authentication server. Please check your internet connection or try again.',
+      error: 'Unable to connect to authentication server. Please check your connection or try again.',
     };
   }
 };
@@ -136,7 +150,7 @@ export const register = async (
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 18000);
+    const timeoutId = setTimeout(() => controller.abort(), 35000);
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -165,6 +179,27 @@ export const register = async (
       return { success: true, message: data.message, data: data.data };
     }
 
+    if (response.status === 409) {
+      return {
+        success: false,
+        error: data?.error || 'An account with this mobile number already exists. Please login.',
+      };
+    }
+
+    if (response.status === 400) {
+      return {
+        success: false,
+        error: data?.error || 'Please check the information you entered.',
+      };
+    }
+
+    if (response.status === 503) {
+      return {
+        success: false,
+        error: data?.error || 'Database service is temporarily waking up. Please try again in a few seconds.',
+      };
+    }
+
     return {
       success: false,
       error: data?.error || 'Registration failed. Please try again.',
@@ -173,12 +208,12 @@ export const register = async (
     if (err.name === 'AbortError') {
       return {
         success: false,
-        error: 'Registration request timed out. The server may be waking up, please try again.',
+        error: 'Registration request timed out. The server may be waking up from cold start, please try again.',
       };
     }
     return {
       success: false,
-      error: 'Unable to connect to authentication server. Please check your internet connection or try again.',
+      error: 'Unable to connect to authentication server. Please check your connection or try again.',
     };
   }
 };

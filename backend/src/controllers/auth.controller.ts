@@ -5,10 +5,11 @@ import { isDatabaseConnected } from '../db/connection.js';
 
 export async function registerUser(req: Request, res: Response) {
   try {
-    const { name, mobile, password, language, state, district } = req.body;
+    const { name, mobile, phone, password, language, state, district } = req.body;
+    const rawMobile = mobile || phone || '';
 
     const cleanName = typeof name === 'string' ? name.trim() : '';
-    let cleanMobile = typeof mobile === 'string' ? mobile.replace(/\D/g, '').trim() : '';
+    let cleanMobile = typeof rawMobile === 'string' ? rawMobile.replace(/\D/g, '').trim() : '';
     const cleanPassword = typeof password === 'string' ? password.trim() : '';
 
     if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
@@ -102,9 +103,10 @@ export async function registerUser(req: Request, res: Response) {
 
 export async function loginUser(req: Request, res: Response) {
   try {
-    const { mobile, password } = req.body;
+    const { mobile, phone, password } = req.body;
+    const rawMobile = mobile || phone || '';
 
-    let cleanMobile = typeof mobile === 'string' ? mobile.replace(/\D/g, '').trim() : '';
+    let cleanMobile = typeof rawMobile === 'string' ? rawMobile.replace(/\D/g, '').trim() : '';
     const cleanPassword = typeof password === 'string' ? password.trim() : '';
 
     if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {

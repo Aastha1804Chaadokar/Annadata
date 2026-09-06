@@ -1,21 +1,23 @@
 /**
  * Centralized API configuration for Annadata Web
- * Supports local development, Vercel deployments, and custom backend URLs.
+ * Supports local development, Vercel deployments, Next.js rewrites proxying, and custom backend URLs.
  */
 
 const getApiBaseUrl = (): string => {
   // 1. If explicitly configured via environment variable (e.g. on Vercel / Render)
   if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    const configured = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    if (configured) return configured;
   }
 
-  // 2. In browser, dynamically resolve based on the active hostname
+  // 2. In browser, dynamically resolve based on the active environment
   if (typeof window !== 'undefined') {
     const { hostname } = window.location;
-    
-    // If accessing via Vercel or custom domain, default to production Render backend
-    if (hostname.endsWith('.vercel.app') || hostname.endsWith('.onrender.com') || hostname.includes('annadata')) {
-      return 'https://annadata-backend.onrender.com/api/v1';
+
+    // When running on Vercel or any deployed domain, relative /api/v1 uses Next.js rewrites proxy
+    // This completely prevents CORS preflight blocking, mixed content, and SSL mismatch errors.
+    if (hostname.endsWith('.vercel.app') || (hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.startsWith('192.168.') && !hostname.startsWith('10.'))) {
+      return '/api/v1';
     }
 
     // If accessing from a mobile device on the local network (e.g. 192.168.x.x or 10.x.x.x)

@@ -78,6 +78,7 @@ app.get('/', (_req, res) => {
 });
 
 // Register routes
+app.use('/api', healthRoutes);
 app.use('/api/v1', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1', farmerRoutes);
